@@ -1,1 +1,1 @@
-# objectOrientedProgrammingProject
+# Project for Object Oriented Programming
