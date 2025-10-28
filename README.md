@@ -78,5 +78,5 @@ Output :
 - Pembulatan ke 8 digit
 - Bila melebihi 8 digit 
 - Bila operasi invalid, print "Error."
-- Output harus di adjust ke kanan
+- Output harus di adjust ke kanan dan jika hasilnya belum ada titik, titik itu ditaruh di akhir yang paling kanan
 - 
