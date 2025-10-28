@@ -51,3 +51,32 @@ Notice that there are two cases, where the calculator will display "Error." inst
         0.
     Error.
 ```
+
+Objektif soal : 
+- Membuat simulasi kalkulator tua
+- Input berupa digit 0-9, operasi aritmatika biasa (+ - x :) dan C untuk clear display
+- Operasi dilakukan dari kiri ke kanan (tidak ada prioritas)
+- Bisa menekan key apapun sesuka hati (kalkulator memiliki error handling)
+- Setiap input memberikan output
+
+Error handling : 
+- Bila [=] ditekan berulang, maka menjalankan operasi sebelumnya
+- Jika 8 digit dari angka yang sama ditekan, hanya mengambil 8 digit pertama (ignore angka berikutnya)
+- Bila display 0 dan menekan 0, tidak terjadi apa2
+- Jika sudah menekan [.] untuk desimal dan ditekan lagi, no effect
+
+Input : 
+- 1 line pertama yakni t (t<1000) -> jumlah testcase
+- t baris berikutnya berisi input untuk setiap testcase
+- Setiap keystroke dibungkus dengan tanda [ ] 
+- Jumlah keystroke maksimal kurang dari 500
+- Sequence diakhiri dengan [=]
+
+Output : 
+- Print hasil operasi perhitungan
+- Size display 8 digit dengan tanda "-" (opsional)
+- Pembulatan ke 8 digit
+- Bila melebihi 8 digit 
+- Bila operasi invalid, print "Error."
+- Output harus di adjust ke kanan
+- 
