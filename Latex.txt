@@ -1,0 +1,427 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{setspace}
+\usepackage{indentfirst}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage[a4paper, left=2cm, right=2cm, top=2.5cm, bottom=2.5cm]{geometry}
+\usepackage{authblk}
+\usepackage{titling}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+
+\lstset{
+  language=C++,                
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue},  
+  commentstyle=\color{green!50!black}, 
+  stringstyle=\color{red},
+  numbers=none,              
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=8pt,
+  backgroundcolor=\color{gray!10},
+  frame=single,             
+  tabsize=2,
+  breaklines=true,     
+  showstringspaces=false
+}
+
+\setlength{\droptitle}{-2cm}
+
+\title{\textbf{Laporan Mingguan 1 Kelompok RDA PBO C}}
+\date{} % Hides the date
+
+\author{Pradhipta Raja Mahendra (5025241055) \\
+Muhamad Aziz Romdhoni (5025241071) \vspace{0.4cm} \\ 
+Liem, Alfred Haryanto (5025241100)
+}
+
+\begin{document}
+\maketitle
+\section{Pemahaman Problem}
+\subsection{Deskripsi Problem}
+\text{
+\noindent Problem : SPOJ POCALC1 - Ancient Pocket Calculator \\
+
+\noindent Soal ini meminta untuk membuat simulator kalkulator lama (sederhana) yang memiliki fungsi atau tujuan seperti berikut. 
+
+\begin{itemize}
+    \item Membaca urutan tombol (keystrokes) yang ditekan.
+    \item Memproses perhitungan sesuai urutan tombol (tanpa prioritas operator).
+    \item Menampilkan hasil akhir seperti kalkulator klasik.
+\end{itemize} 
+
+\vspace*{0.2cm}
+
+\subsection{Contoh Input/Output}
+\noindent \textbf{Input} 
+\begin{verbatim}
+12 
+[3] [+] [4] [x] [5] [=] 
+[1] [:] [6] [=] 
+[4] [.] [8] [-] [x] [+] [-] [+] [x] [-] [.] [=] 
+[4] [.] [8] [-] [x] [+] [-] [+] [x] [.] [=] 
+[+] [+] [+] [+] [+] [+] [1] [=] [=] [=] 
+[9] [8] [C] [-] [7] [6] [5] [4] [3] [2] [1] [0] [1] [2] [3] [4] [=] 
+[1] [=] [2] [=] [3] [=] 
+[5] [:] [9] [8] [7] [8] [9] [8] [9] [8] [7] [8] [8] [:] [4] [5] [6] [7] [8] [9] [=] 
+[-] [9] [9] [9] [9] [9] [9] [9] [9] [-] [-] [-] [-] [8] [8] [8] [8] [8] [8] [=] 
+[2] [.] [3] [.] [4] [.] [5] [=] 
+[0] [0] [0] [0] [0] [=] 
+[.] [:] [.] [=] 
+\end{verbatim}
+
+\noindent \textbf{Output}
+\begin{verbatim}
+       35.
+ 0.1666667
+       4.8
+        0.
+        1.
+-76543210.
+        3.
+  1.108-13
+-1.0089 08
+     2.345
+        0.
+    Error.
+\end{verbatim} \\ \\
+
+\section{Computional Thinking}
+\subsection{Pemecahan Masalah}
+Problem ini bisa dibagi menjadi beberapa sub-Problem
+\begin{enumerate}
+    \item \textbf{State Modeling dan Initialization}
+    \item \textbf{Input Processing dan Validasi}
+    \item \textbf{Arithmetic Calculation (Left-to-Right)}
+    \item \textbf{Error Handling dan State Update}
+    \item \textbf{Output Formatting dan Rounding}
+\end{enumerate}
+
+\subsection{Pengenalan Pola}
+Kita dapat mengabstraksi masalah ini sebagai:
+\begin{itemize}
+    \item Setiap Keystroke = Event yang memicu transisi dalam Mesin Keadaan Terbatas (FSM).
+    \item Perhitungan = Operasi yang dilakukan secara sekuensial (left-to-right) segera setelah operand kedua (angka) selesai dimasukkan.
+    \item Tampilan = Format String Presisi Tinggi dengan batasan keras 8 digit total, wajib menampilkan titik desimal, dan memiliki mode Notasi Ilmiah dan Error khusus.
+\end{itemize}
+
+\subsection{Desain Algoritma}
+Problem ini menggunakan Algoritma \textbf{Finite State Machine}
+\begin{algorithm}
+\caption{Finite State Machine Algorithm}
+\begin{algorithmic}[1]
+    \State Inisialisasi State: $R \leftarrow 0$ (Register), $O \leftarrow \text{None}$ (Pending Op), $D \leftarrow \text{"0."}$ (Display), $M \leftarrow \text{False}$ (Input Mode), $E \leftarrow \text{False}$ (Error Flag).
+    \State Untuk setiap Key dalam urutan input, lakukan:
+    \State Jika $E$ ($ErrorFlag$) adalah True dan $Key \neq [C]$, lanjutkan ke Key berikutnya.
+    \State Jika $Key = [C]$, panggil Reset() (Baris 1).
+    \State Jika $Key$ adalah Digit atau Titik Desimal:
+    \State Panggil HandleInput(Key, D, M). Output: $D', M'$. $D \leftarrow D', M \leftarrow M'$.
+    \State Jika $Key$ adalah Operator $\in \{+, -, \times, :\}$ atau $[=]$:
+    \State Panggil ExecuteOperation(Key, R, O, D, M).
+    \State Check Hasil $R$:
+    \State Jika $Key$ adalah Operator, Set $O \leftarrow Key$.
+    \State Set $M \leftarrow \text{False}$.
+    \State Jika $E$ adalah True, Cetak "Error.".
+    \State Lainnya, Cetak FormatOutput(R).
+\end{algorithmic}
+\end{algorithm}
+
+\section{Algoritma FSM yang digunakan}
+\subsection{Deskripsi Algoritma}
+Algoritma ini menggunakan pendekatan FSM untuk memproses stream input dan mengelola logika perhitungan.
+
+\subsection{Prinsip Kerja}
+Untuk mengelola logika kalkulator yang kontekstual, algoritma membandingkan Keadaan (State) saat ini dengan Input (Keystroke) yang diterima:
+\begin{itemize}
+    \item Transisi dipicu dari Keadaan Awal (Idle) ke Keadaan Baru (misalnya, Input Angka atau Operator Pending) berdasarkan jenis Keystroke.
+    \item Perhitungan dipicu hanya jika Keystroke adalah Operator baru atau [=] dan kalkulator berada dalam Keadaan Input Angka.
+    \item Logika "Headstrong" (misalnya, operator berturut-turut, batasan 8 digit) diterapkan untuk menentukan Keadaan Berikutnya (Next State) dan memperbarui register internal.
+\end{itemize}
+Setelah semua Keystroke diproses, Output Akhir diformat berdasarkan aturan pembulatan 8 digit dan Notasi Ilmiah.
+
+\subsection{Mengapa Menggunakan Algoritma ini?}
+Kalkulator merupakan salah satu sistem yang menggunakan state dan dipicu oleh event, yaitu penekanan tombol. FSM secara alami membagi seluruh proses penggunaan kalkulator menjadi beberapa mode operasi yang berbeda, atau "keadaan" (state)
+\begin{enumerate}
+    \item \textbf{Struktur Jelas:} FSM membagi operasi kalkulator menjadi mode yang berbeda (misalnya, Input Angka, Operator Tertunda, Error).
+    \item \textbf{Menangani Aturan Khusus:} Aturan "keras kepala" kalkulator (seperti mengabaikan operator berulang atau batas 8 digit) dapat dimodelkan secara elegan sebagai transisi atau aksi di dalam keadaan. Misalnya, jika operator ditekan berulang, FSM hanya menimpa operator sebelumnya.
+    \item \textbf{Logika Sekuensial:} FSM secara alami mendukung perhitungan kiri-ke-kanan tanpa preseden, karena setiap operator yang masuk akan memicu perhitungan tertunda sebelum operator baru disimpan.
+\end{enumerate}
+
+\section{Source Code}
+    \begin{lstlisting}
+    #include <iostream>
+    #include <string>
+    #include <sstream>
+    #include <cmath>
+    #include <cstdio>
+    #include <cstring>
+    #include <cstdlib>
+    
+    using namespace std;
+    
+    double apply_op(char op, double a, double b, bool &error) {
+        double result;
+        switch (op) {
+            case '+': result = a + b; break;
+            case '-': result = a - b; break;
+            case 'x': result = a * b; break;
+            case ':': 
+                if (b == 0) {
+                    error = true;
+                    return 0;
+                }
+                result = a / b;
+                break;
+        }
+        if (fabs(result) >= 1e100) {
+            error = true;
+            return 0;
+        }
+        return result;
+    }
+    
+    string format_fixed(double x) {
+        if (x == 0.0) {
+            return "0.";
+        }
+        bool negative = (x < 0);
+        x = fabs(x);
+        
+        int integer_digits = (x < 1.0) ? 1 : static_cast<int>(floor(log10(x))) + 1;
+        int decimal_places = 8 - integer_digits;
+        if (decimal_places < 0) decimal_places = 0;
+        
+        char buffer[50];
+        sprintf(buffer, "%.*f", decimal_places, x);
+        string s(buffer);
+        
+        size_t dot = s.find('.');
+        if (dot != string::npos) {
+            s.erase(s.find_last_not_of('0') + 1);
+            if (s.back() == '.') {
+                // keep the decimal point
+            }
+        } else {
+            s += '.';
+        }
+        
+        if (negative) {
+            s = '-' + s;
+        }
+        return s;
+    }
+    
+    string format_scientific(double x) {
+        if (x == 0.0) {
+            return "0.";
+        }
+        bool negative = (x < 0);
+        x = fabs(x);
+        
+        int exponent = static_cast<int>(floor(log10(x)));
+        double mantissa = x / pow(10.0, exponent);
+        
+        mantissa = round(mantissa * 10000.0) / 10000.0;
+        
+        if (mantissa >= 10.0) {
+            mantissa /= 10.0;
+            exponent++;
+        }
+        
+        char buffer[20];
+        sprintf(buffer, "%.4f", mantissa);
+        string s_m(buffer);
+        
+        size_t dot = s_m.find('.');
+        if (dot != string::npos) {
+            s_m.erase(s_m.find_last_not_of('0') + 1);
+            if (s_m.back() == '.') {
+                // Keep decimal point, no trailing zeros
+            }
+        }
+        
+        string exp_str;
+        if (exponent >= 0) {
+            exp_str = " ";
+        } else {
+            exp_str = "-";
+            exponent = -exponent;
+        }
+        char exp_buffer[3];
+        sprintf(exp_buffer, "%02d", exponent);
+        exp_str += exp_buffer;
+        
+        string result = s_m + exp_str;
+        if (negative) {
+            result = '-' + result;
+        }
+        return result;
+    }
+    
+    string format_value(double x) {
+        if (fabs(x) <= 1e-100) {
+            return "0.";
+        } else if (fabs(x) >= 1e100) {
+            return "Error.";
+        } else {
+            double abs_x = fabs(x);
+            
+            // Check if we need scientific notation
+            // If rounded integer needs > 8 digits, use scientific
+            double rounded_int = round(abs_x);
+            if (rounded_int >= 1e8) {
+                return format_scientific(x);
+            }
+            
+            // Check if rounding to 8 digits would give all zeros for small numbers
+            if (abs_x < 5e-8) {
+                // Would round to 0 in fixed format with 8 digits
+                if (abs_x > 1e-100) {
+                    return format_scientific(x);
+                } else {
+                    return "0.";
+                }
+            }
+            
+            return format_fixed(x);
+        }
+    }
+    
+    string pad_to_10(const string &s) {
+        int len = s.length();
+        if (len < 10) {
+            return string(10 - len, ' ') + s;
+        } else {
+            return s;
+        }
+    }
+    
+    int main() {
+        int t;
+        cin >> t;
+        string line;
+        getline(cin, line); // skip newline after t
+        
+        for (int i = 0; i < t; i++) {
+            getline(cin, line);
+            stringstream ss(line);
+            string key;
+            
+            double current_value = 0.0;
+            string current_input = "";
+            char last_operator = 0;
+            bool error = false;
+            bool has_input = false; // Track if we're currently inputting a number
+    
+            while (ss >> key) {
+                if (error && key != "[C]") {
+                    continue;
+                }
+                
+                if (key == "[C]") {
+                    current_value = 0.0;
+                    current_input = "";
+                    last_operator = 0;
+                    error = false;
+                    has_input = false;
+                } else {
+                    char c = key[1];
+                    
+                    if (c == '.' || (c >= '0' && c <= '9')) {
+                        // Digit or decimal point
+                        
+                        if (c == '.') {
+                            if (!has_input) {
+                                // Start new number with leading decimal point
+                                current_input = "0.";
+                                has_input = true;
+                            } else if (current_input.find('.') == string::npos) {
+                                // Add decimal point if not already present
+                                current_input += '.';
+                            }
+                            // Otherwise ignore duplicate decimal point
+                        } else if (c == '0') {
+                            if (!has_input) {
+                                // Start inputting, but don't add leading zeros yet
+                                current_input = "0";
+                                has_input = true;
+                            } else if (current_input == "0") {
+                                // Multiple leading zeros - ignore
+                            } else {
+                                // Count digits
+                                int digit_count = 0;
+                                for (char ch : current_input) {
+                                    if (ch >= '0' && ch <= '9') {
+                                        digit_count++;
+                                    }
+                                }
+                                if (digit_count < 8) {
+                                    current_input += c;
+                                }
+                            }
+                        } else {
+                            // Non-zero digit
+                            if (!has_input) {
+                                current_input = "";
+                                current_input += c;
+                                has_input = true;
+                            } else if (current_input == "0") {
+                                // Replace leading zero
+                                current_input = "";
+                                current_input += c;
+                            } else {
+                                // Count digits
+                                int digit_count = 0;
+                                for (char ch : current_input) {
+                                    if (ch >= '0' && ch <= '9') {
+                                        digit_count++;
+                                    }
+                                }
+                                if (digit_count < 8) {
+                                    current_input += c;
+                                }
+                            }
+                        }
+                    } else {
+                        // Operator or equal sign
+                        
+                        if (has_input && !current_input.empty()) {
+                            // Process the current input
+                            double num = stod(current_input);
+                            if (last_operator != 0) {
+                                current_value = apply_op(last_operator, current_value, num, error);
+                            } else {
+                                current_value = num;
+                            }
+                            current_input = "";
+                            has_input = false;
+                        }
+                        
+                        if (c == '=') {
+                            last_operator = 0;
+                        } else {
+                            // It's an operator (+, -, x, :)
+                            last_operator = c;
+                        }
+                    }
+                }
+            }
+    
+            if (error) {
+                cout << pad_to_10("Error.") << endl;
+            } else {
+                string output = format_value(current_value);
+                output = pad_to_10(output);
+                cout << output << endl;
+            }
+        }
+        return 0;
+    }
+    \end{lstlisting} \\
+
+\end{document}
