@@ -50,21 +50,32 @@ void format_output(double x, char *output) {
         char temp[20];
         sprintf(temp, "%.4f", mantissa);
         
-        int len = strlen(temp);
-        while (len > 0 && temp[len-1] == '0') {
-            len--;
+        size_t len = strlen(temp);
+        size_t dot_pos = 0;
+        for (size_t j = 0; j < len; j++) {
+            if (temp[j] == '.') {
+                dot_pos = j;
+                break;
+            }
         }
-        temp[len] = '\0';
+        
+        if (dot_pos > 0) {
+            size_t last_non_zero = len - 1;
+            while (last_non_zero > dot_pos && temp[last_non_zero] == '0') {
+                last_non_zero--;
+            }
+            temp[last_non_zero + 1] = '\0';
+        }
         
         char exp_sign = (exponent >= 0) ? ' ' : '-';
         int exp_val = (exponent >= 0) ? exponent : -exponent;
         
         char result[20];
-        sprintf(result, "%s%s%c%02d", 
-                negative ? "-" : "",
-                temp,
-                exp_sign,
-                exp_val);
+        if (negative) {
+            sprintf(result, "-%s%c%02d", temp, exp_sign, exp_val);
+        } else {
+            sprintf(result, "%s%c%02d", temp, exp_sign, exp_val);
+        }
         
         sprintf(output, "%10s", result);
     } else {
@@ -75,20 +86,34 @@ void format_output(double x, char *output) {
         char temp[20];
         sprintf(temp, "%.*f", decimal_places, abs_x);
         
-        int len = strlen(temp);
-        while (len > 0 && temp[len-1] == '0') {
-            len--;
+        size_t len = strlen(temp);
+        size_t dot_pos = 0;
+        for (size_t j = 0; j < len; j++) {
+            if (temp[j] == '.') {
+                dot_pos = j;
+                break;
+            }
         }
-        temp[len] = '\0';
         
-        if (strchr(temp, '.') == NULL) {
+        if (dot_pos > 0) {
+            size_t last_non_zero = len - 1;
+            while (last_non_zero > dot_pos && temp[last_non_zero] == '0') {
+                last_non_zero--;
+            }
+            temp[last_non_zero + 1] = '\0';
+
+            if (temp[strlen(temp) - 1] != '.') {
+            }
+        } else {
             strcat(temp, ".");
         }
         
         char result[20];
-        sprintf(result, "%s%s", 
-                negative ? "-" : "",
-                temp);
+        if (negative) {
+            sprintf(result, "-%s", temp);
+        } else {
+            strcpy(result, temp);
+        }
         
         sprintf(output, "%10s", result);
     }
@@ -114,87 +139,87 @@ int main() {
         bool has_input = false;
         
         int i = 0;
-        while (line[i]) {
-            if (line[i] == '[') {
-                i++;
-                if (!line[i]) break;
-                
-                char c = line[i];
-                
-                if (error && c != 'C') {
-                    while (line[i] && line[i] != ']') i++;
-                    if (line[i]) i++;
-                    continue;
+        int len = strlen(line);
+
+        for (i = 0; i < len; i++) {
+            if (line[i] != '[') continue;
+            
+            i++;
+            if (i >= len) break;
+            
+            char c = line[i];
+            
+            if (error && c != 'C') {
+                while (i < len && line[i] != ']') i++;
+                continue;
+            }
+            
+            if (c == 'C') {
+                current_value = 0.0;
+                input_len = 0;
+                digit_count = 0;
+                has_dot = false;
+                last_operator = 0;
+                error = false;
+                has_input = false;
+            } else if (c == '.' || (c >= '0' && c <= '9')) {
+                if (c == '.') {
+                    if (!has_input) {
+                        current_input[0] = '0';
+                        current_input[1] = '.';
+                        input_len = 2;
+                        digit_count = 1;
+                        has_dot = true;
+                        has_input = true;
+                    } else if (!has_dot) {
+                        current_input[input_len++] = '.';
+                        has_dot = true;
+                    }
+                } else if (c == '0') {
+                    if (!has_input) {
+                        current_input[0] = '0';
+                        input_len = 1;
+                        digit_count = 1;
+                        has_input = true;
+                    } else if (input_len == 1 && current_input[0] == '0' && !has_dot) {
+                    } else if (digit_count < 8) {
+                        current_input[input_len++] = c;
+                        digit_count++;
+                    }
+                } else {
+                    if (!has_input) {
+                        current_input[0] = c;
+                        input_len = 1;
+                        digit_count = 1;
+                        has_input = true;
+                    } else if (input_len == 1 && current_input[0] == '0' && !has_dot) {
+                        current_input[0] = c;
+                    } else if (digit_count < 8) {
+                        current_input[input_len++] = c;
+                        digit_count++;
+                    }
                 }
-                
-                if (c == 'C') {
-                    current_value = 0.0;
+            } else {
+                if (has_input && input_len > 0) {
+                    current_input[input_len] = '\0';
+                    double num = atof(current_input);
+                    
+                    if (last_operator != 0) {
+                        current_value = apply_op(last_operator, current_value, num, error);
+                    } else {
+                        current_value = num;
+                    }
+                    
                     input_len = 0;
                     digit_count = 0;
                     has_dot = false;
-                    last_operator = 0;
-                    error = false;
                     has_input = false;
-                } else if (c == '.' || (c >= '0' && c <= '9')) {
-                    if (c == '.') {
-                        if (!has_input) {
-                            current_input[0] = '0';
-                            current_input[1] = '.';
-                            input_len = 2;
-                            digit_count = 1;
-                            has_dot = true;
-                            has_input = true;
-                        } else if (!has_dot) {
-                            current_input[input_len++] = '.';
-                            has_dot = true;
-                        }
-                    } else if (c == '0') {
-                        if (!has_input) {
-                            current_input[0] = '0';
-                            input_len = 1;
-                            digit_count = 1;
-                            has_input = true;
-                        } else if (input_len == 1 && current_input[0] == '0' && !has_dot) {
-                        } else if (digit_count < 8) {
-                            current_input[input_len++] = c;
-                            digit_count++;
-                        }
-                    } else {
-                        if (!has_input) {
-                            current_input[0] = c;
-                            input_len = 1;
-                            digit_count = 1;
-                            has_input = true;
-                        } else if (input_len == 1 && current_input[0] == '0' && !has_dot) {
-                            current_input[0] = c;
-                        } else if (digit_count < 8) {
-                            current_input[input_len++] = c;
-                            digit_count++;
-                        }
-                    }
-                } else {
-                    if (has_input && input_len > 0) {
-                        current_input[input_len] = '\0';
-                        double num = atof(current_input);
-                        
-                        if (last_operator != 0) {
-                            current_value = apply_op(last_operator, current_value, num, error);
-                        } else {
-                            current_value = num;
-                        }
-                        
-                        input_len = 0;
-                        digit_count = 0;
-                        has_dot = false;
-                        has_input = false;
-                    }
-                    
-                    last_operator = (c == '=') ? 0 : c;
                 }
                 
-                while (line[i] && line[i] != ']') i++;
+                last_operator = (c == '=') ? 0 : c;
             }
-            if (line[i]) i++;
+            
+            while (i < len && line[i] != ']') i++;
         }
         
         char output[16];
