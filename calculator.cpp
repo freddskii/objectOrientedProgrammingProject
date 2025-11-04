@@ -50,16 +50,27 @@ void format_output(double x, char *output) {
         char temp[20];
         sprintf(temp, "%.4f", mantissa);
         
-        int len = strlen(temp);
-        while (len > 0 && temp[len-1] == '0') len--;
-        temp[len] = '\0';
+        char *dot = strchr(temp, '.');
+        if (dot) {
+            int len = strlen(temp);
+            while (len > 0 && temp[len-1] == '0') {
+                temp[len-1] = '\0';
+                len--;
+            }
+        }
         
-        sprintf(output, "%*s%s%c%02d", 
-                10 - len - 3 - (negative ? 1 : 0), "",
-                negative ? "-" : "",
-                temp,
-                exponent >= 0 ? ' ' : '-',
-                exponent >= 0 ? exponent : -exponent);
+        char result[20];
+        if (negative) {
+            sprintf(result, "-%s%c%02d", temp, 
+                    exponent >= 0 ? ' ' : '-',
+                    exponent >= 0 ? exponent : -exponent);
+        } else {
+            sprintf(result, "%s%c%02d", temp,
+                    exponent >= 0 ? ' ' : '-',
+                    exponent >= 0 ? exponent : -exponent);
+        }
+        
+        sprintf(output, "%*s", 10, result);
     } else {
         int integer_digits = (abs_x < 1.0) ? 1 : (int)floor(log10(abs_x)) + 1;
         int decimal_places = 8 - integer_digits;
@@ -68,14 +79,28 @@ void format_output(double x, char *output) {
         char temp[20];
         sprintf(temp, "%.*f", decimal_places, abs_x);
         
-        int len = strlen(temp);
-        while (len > 0 && temp[len-1] == '0') len--;
-        temp[len] = '\0';
+        char *dot = strchr(temp, '.');
+        if (dot) {
+            int len = strlen(temp);
+            while (len > 0 && temp[len-1] == '0') {
+                temp[len-1] = '\0';
+                len--;
+            }
+            if (temp[strlen(temp)-1] != '.') {
+                strcat(temp, ".");
+            }
+        } else {
+            strcat(temp, ".");
+        }
         
-        sprintf(output, "%*s%s%s", 
-                10 - len - (negative ? 1 : 0), "",
-                negative ? "-" : "",
-                temp);
+        char result[20];
+        if (negative) {
+            sprintf(result, "-%s", temp);
+        } else {
+            sprintf(result, "%s", temp);
+        }
+        
+        sprintf(output, "%*s", 10, result);
     }
 }
 
