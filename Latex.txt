@@ -11,7 +11,13 @@
 \usepackage{titling}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
-
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
 
 \lstset{
   language=C++,                
@@ -27,56 +33,140 @@
   frame=single,             
   tabsize=2,
   breaklines=true,     
-  showstringspaces=false
+  showstringspaces=false,
+  literate=
+      {→}{{$\rightarrow$}}1
+      {≤}{{$\le$}}1
+      {≥}{{$\ge$}}1
+      {×}{{$\times$}}1
+      {±}{{$\pm$}}1
+      {⁰}{{$^0$}}1
+      {¹}{{$^1$}}1
+      {²}{{$^2$}}1
+      {³}{{$^3$}}1
+      {⁴}{{$^4$}}1
+      {⁵}{{$^5$}}1
+      {⁶}{{$^6$}}1
+      {⁷}{{$^7$}}1
+      {⁸}{{$^8$}}1
+      {⁹}{{$^9$}}1
+      {⁻}{{$^-$}}1
+}
+
+\newtcolorbox{examplebox}[1][]{
+  colback=blue!5!white,
+  colframe=blue!75!black,
+  title=#1,
+  fonttitle=\bfseries
+}
+
+\newtcolorbox{notebox}[1][]{
+  colback=yellow!5!white,
+  colframe=orange!75!black,
+  title=#1,
+  fonttitle=\bfseries
 }
 
 \setlength{\droptitle}{-2cm}
 
-\title{\textbf{Laporan Mingguan 1 Kelompok RDA PBO C}}
+\title{\textbf{Laporan Akhir Kelompok RDA PBO C}}
 \date{} % Hides the date
 
-\author{Pradhipta Raja Mahendra (5025241055) \\
-Muhamad Aziz Romdhoni (5025241071) \vspace{0.4cm} \\ 
-Liem, Alfred Haryanto (5025241100)
+\author{
+\begin{tabular}{ll}
+Pradhipta Raja Mahendra & (5025241055) \\
+Muhamad Aziz Romdhoni   & (5025241071) \\
+Liem Alfred Haryanto    & (5025241100) \\
+\end{tabular}
 }
 
 \begin{document}
 \maketitle
+
 \section{Pemahaman Problem}
-\subsection{Deskripsi Problem}
-\text{
+\subsection{Deskripsi Masalah}
 \noindent Problem : SPOJ POCALC1 - Ancient Pocket Calculator \\
 
-\noindent Soal ini meminta untuk membuat simulator kalkulator lama (sederhana) yang memiliki fungsi atau tujuan seperti berikut. 
+Pada soal ini diminta untuk mensimulasikan perilaku kalkulator saku kuno (Ancient Pocket Calculator) yang memiliki aturan khusus dalam memproses input. Kalkulator ini menerima serangkaian tombol yang ditekan dan harus menampilkan hasil perhitungan sesuai dengan aturan-aturan berikut:
 
 \begin{itemize}
-    \item Membaca urutan tombol (keystrokes) yang ditekan.
-    \item Memproses perhitungan sesuai urutan tombol (tanpa prioritas operator).
-    \item Menampilkan hasil akhir seperti kalkulator klasik.
-\end{itemize} 
-
-\vspace*{0.2cm}
+    \item \textbf{Tombol yang tersedia}: 
+    \begin{itemize}
+        \item Digit 0--9
+        \item Titik desimal (\texttt{.})
+        \item Operator aritmetika: \texttt{+} (penjumlahan), \texttt{-} (pengurangan), \texttt{x} (perkalian), \texttt{:} (pembagian)
+        \item Tombol sama dengan (\texttt{=}) untuk menghitung dan menampilkan hasil
+        \item Tombol \texttt{[C]} untuk mereset kalkulator dan mengosongkan layar
+    \end{itemize}
+    
+    \item \textbf{Aturan Pemrosesan}:
+    \begin{itemize}
+        \item Perhitungan dilakukan \textbf{dari kiri ke kanan} tanpa memperhatikan prioritas operator.
+        \item Jika beberapa tombol operator ditekan berurutan, \textbf{hanya operator terakhir} yang akan diproses; operator sebelumnya diabaikan.
+        \item Jika lebih dari 8 digit dimasukkan untuk satu bilangan, \textbf{hanya 8 digit pertama} yang diproses — digit selanjutnya diabaikan.
+        \item Jika nilai tampilan saat ini adalah nol, penekanan tombol \texttt{0} diabaikan.
+        \item Untuk nilai floating point, leading zero sebelum titik desimal boleh dihilangkan saat input, tetapi akan ditampilkan saat output.
+        \item Penekanan titik desimal berulang dalam satu bilangan diabaikan.
+        \item Jika input bilangan diakhiri dengan titik desimal, titik desimal tersebut diabaikan.
+    \end{itemize}
+    
+    \item \textbf{Format Tampilan Layar}:
+    \begin{itemize}
+        \item Ukuran layar: 8 digit + tanda minus (opsional) + titik desimal.
+        \item Titik desimal \textbf{selalu ditampilkan}, bahkan untuk bilangan bulat.
+        \item Nilai di-align ke kanan (right-justified).
+        \item Jika nilai memiliki lebih dari 8 digit integer, dilakukan pembulatan dan/atau penggunaan notasi ilmiah sesuai aturan soal.
+        \item Jika nilai memiliki lebih dari 8 digit desimal, dilakukan pembulatan ke 8 digit pada bagian tampilan yang relevan.
+    \end{itemize}
+    
+    \item \textbf{Notasi Ilmiah (Scientific Notation)}:
+    \begin{itemize}
+        \item Digunakan jika:
+        \begin{itemize}
+            \item Nilai absolut yang dibulatkan ke integer membutuhkan lebih dari 8 digit, atau
+            \item Nilai absolut $> 10^{-100}$ tetapi pembulatan ke 8 digit menghasilkan hanya nol
+        \end{itemize}
+        \item Format: satu digit non-zero sebelum titik desimal, hingga 4 digit setelah titik desimal.
+        \item Eksponen: diawali spasi untuk positif atau \texttt{-} untuk negatif, diikuti 2 digit (dengan leading zero jika perlu).
+    \end{itemize}
+    
+    \item \textbf{Kondisi Error}:
+    \begin{itemize}
+        \item Tampilkan \texttt{Error.} jika:
+        \begin{itemize}
+            \item Hasil perhitungan (sementara atau akhir) memiliki nilai absolut $\geq 10^{100}$, atau
+            \item Terjadi pembagian dengan nol
+        \end{itemize}
+        \item Setelah error terjadi, semua tombol selanjutnya diabaikan kecuali \texttt{[C]}.
+    \end{itemize}
+    
+    \item \textbf{Nilai Khusus}:
+    \begin{itemize}
+        \item Jika nilai absolut $\leq 10^{-100}$, dianggap nol.
+    \end{itemize}
+\end{itemize}
 
 \subsection{Contoh Input/Output}
-\noindent \textbf{Input} 
-\begin{verbatim}
-12 
-[3] [+] [4] [x] [5] [=] 
-[1] [:] [6] [=] 
-[4] [.] [8] [-] [x] [+] [-] [+] [x] [-] [.] [=] 
-[4] [.] [8] [-] [x] [+] [-] [+] [x] [.] [=] 
-[+] [+] [+] [+] [+] [+] [1] [=] [=] [=] 
-[9] [8] [C] [-] [7] [6] [5] [4] [3] [2] [1] [0] [1] [2] [3] [4] [=] 
-[1] [=] [2] [=] [3] [=] 
-[5] [:] [9] [8] [7] [8] [9] [8] [9] [8] [7] [8] [8] [:] [4] [5] [6] [7] [8] [9] [=] 
-[-] [9] [9] [9] [9] [9] [9] [9] [9] [-] [-] [-] [-] [8] [8] [8] [8] [8] [8] [=] 
-[2] [.] [3] [.] [4] [.] [5] [=] 
-[0] [0] [0] [0] [0] [=] 
-[.] [:] [.] [=] 
-\end{verbatim}
 
-\noindent \textbf{Output}
-\begin{verbatim}
+\noindent \textbf{Input:}
+\begin{lstlisting}
+12
+[3] [+] [4] [x] [5] [=]
+[1] [:] [6] [=]
+[4] [.] [8] [-] [x] [+] [-] [+] [x] [-] [.] [=]
+[4] [.] [8] [-] [x] [+] [-] [+] [x] [.] [=]
+[+] [+] [+] [+] [+] [+] [1] [=] [=] [=]
+[9] [8] [C] [-] [7] [6] [5] [4] [3] [2] [1] [0] [1] [2] [3] [4] [=]
+[1] [=] [2] [=] [3] [=]
+[5] [:] [9] [8] [7] [8] [9] [8] [9] [8] [7] [8] [8] [:] [4] [5] [6] [7] [8] [9] [=]
+[-] [9] [9] [9] [9] [9] [9] [9] [9] [-] [-] [-] [-] [8] [8] [8] [8] [8] [8] [=]
+[2] [.] [3] [.] [4] [.] [5] [=]
+[0] [0] [0] [0] [0] [=]
+[.] [:] [.] [=]
+\end{lstlisting}
+
+\noindent \textbf{Output:}
+\begin{lstlisting}
        35.
  0.1666667
        4.8
@@ -89,339 +179,2679 @@ Liem, Alfred Haryanto (5025241100)
      2.345
         0.
     Error.
-\end{verbatim} \\ \\
+\end{lstlisting}
 
-\section{Computional Thinking}
-\subsection{Pemecahan Masalah}
-Problem ini bisa dibagi menjadi beberapa sub-Problem
-\begin{enumerate}
-    \item \textbf{State Modeling dan Initialization}
-    \item \textbf{Input Processing dan Validasi}
-    \item \textbf{Arithmetic Calculation (Left-to-Right)}
-    \item \textbf{Error Handling dan State Update}
-    \item \textbf{Output Formatting dan Rounding}
-\end{enumerate}
-
-\subsection{Pengenalan Pola}
-Kita dapat mengabstraksi masalah ini sebagai:
+\noindent \textbf{Penjelasan Contoh:}
 \begin{itemize}
-    \item Setiap Keystroke = Event yang memicu transisi dalam Mesin Keadaan Terbatas (FSM).
-    \item Perhitungan = Operasi yang dilakukan secara sekuensial (left-to-right) segera setelah operand kedua (angka) selesai dimasukkan.
-    \item Tampilan = Format String Presisi Tinggi dengan batasan keras 8 digit total, wajib menampilkan titik desimal, dan memiliki mode Notasi Ilmiah dan Error khusus.
+    \item \texttt{[3] [+] [4] [x] [5] [=]}: Dihitung sebagai \texttt{(3 + 4) x 5 = 35} (dari kiri ke kanan).
+    \item \texttt{[1] [:] [6] [=]}: Hasil pembagian 1 oleh 6 dibulatkan menjadi 8 digit: \texttt{0.1666667}.
+    \item \texttt{[4] [.] [8] [-] [x] [+] [-] [+] [x] [-] [.] [=]}: Operator berurutan diabaikan, hasil akhir \texttt{4.8}.
+    \item \texttt{[4] [.] [8] [-] [x] [+] [-] [+] [x] [.] [=]}: Kasus serupa dengan titik desimal di akhir input bilangan — hasil tetap \texttt{0.} karena input operator meniadakan angka yang tak lengkap.
+    \item \texttt{[+] [+] [+] [+] [+] [+] [1] [=] [=] [=]}: Multiple operator diabaikan, hasil \texttt{1.}.
+    \item \texttt{[9] [8] [C] [-] [7] [6] [5] [4] [3] [2] [1] [0] [1] [2] [3] [4] [=]}: \texttt{[C]} mereset; kemudian input terbatas 8 digit sehingga menghasilkan \texttt{-76543210.}.
+    \item \texttt{[1] [=] [2] [=] [3] [=]}: Multiple \texttt{=} menghasilkan nilai terakhir: \texttt{3.}.
+    \item \texttt{[5] [:] [9] [8] [7] [8] [9] [8] [9] [8] [7] [8] [8] [:] [4] [5] [6] [7] [8] [9] [=]}: Hasil sangat kecil sehingga menggunakan notasi ilmiah: \texttt{1.108-13}.
+    \item \texttt{[-] [9] [9] [9] [9] [9] [9] [9] [9] [-] [-] [-] [-] [8] [8] [8] [8] [8] [8] [=]}: Nilai besar ditampilkan menggunakan notasi ilmiah dengan tanda minus: \texttt{-1.0089 08}.
+    \item \texttt{[2] [.] [3] [.] [4] [.] [5] [=]}: Titik desimal berulang diabaikan sehingga menghasilkan \texttt{2.345}.
+    \item \texttt{[0] [0] [0] [0] [0] [=]}: Leading zero diabaikan, hasil \texttt{0.}.
+    \item \texttt{[.] [:] [.] [=]}: Input tidak valid / pembagian oleh nol → \texttt{Error.}
 \end{itemize}
 
-\subsection{Desain Algoritma}
-Problem ini menggunakan Algoritma \textbf{Finite State Machine}
-\begin{algorithm}
-\caption{Finite State Machine Algorithm}
-\begin{algorithmic}[1]
-    \State Inisialisasi State: $R \leftarrow 0$ (Register), $O \leftarrow \text{None}$ (Pending Op), $D \leftarrow \text{"0."}$ (Display), $M \leftarrow \text{False}$ (Input Mode), $E \leftarrow \text{False}$ (Error Flag).
-    \State Untuk setiap Key dalam urutan input, lakukan:
-    \State Jika $E$ ($ErrorFlag$) adalah True dan $Key \neq [C]$, lanjutkan ke Key berikutnya.
-    \State Jika $Key = [C]$, panggil Reset() (Baris 1).
-    \State Jika $Key$ adalah Digit atau Titik Desimal:
-    \State Panggil HandleInput(Key, D, M). Output: $D', M'$. $D \leftarrow D', M \leftarrow M'$.
-    \State Jika $Key$ adalah Operator $\in \{+, -, \times, :\}$ atau $[=]$:
-    \State Panggil ExecuteOperation(Key, R, O, D, M).
-    \State Check Hasil $R$:
-    \State Jika $Key$ adalah Operator, Set $O \leftarrow Key$.
-    \State Set $M \leftarrow \text{False}$.
-    \State Jika $E$ adalah True, Cetak "Error.".
-    \State Lainnya, Cetak FormatOutput(R).
-\end{algorithmic}
-\end{algorithm}
+\section{Computational Thinking}
 
-\section{Algoritma FSM yang digunakan}
+\subsection{Decomposition (Pemecahan Masalah)}
+Kalkulator ini dapat dipecah menjadi beberapa komponen fungsional yang bekerja secara terintegrasi, mirip dengan cara kita memecah masalah kompleks menjadi bagian-bagian yang lebih kecil dan mudah dikelola:
+
+\subsubsection*{Sub-problem 1: Input Processing (Pemrosesan Masukan)}
+\begin{itemize}
+    \item Membaca dan menginterpretasi input: Sistem harus memahami format input khusus yang menggunakan kurung siku \texttt{[}tombol\texttt{]}.
+    \item Mengidentifikasi jenis tombol: Membedakan antara angka (0-9), operator (+, -, x, :, =), titik desimal (.), dan tombol clear (C).
+    \item Validasi urutan input: Memastikan urutan tombol yang ditekan masuk akal secara logika kalkulator.
+\end{itemize}
+
+\subsubsection*{Sub-problem 2: State Management (Manajemen Status Kalkulator)}
+\begin{itemize}
+    \item Melacak nilai saat ini: Menyimpan hasil perhitungan terkini dalam variabel \texttt{currentValue}.
+    \item Mengelola input sementara: Menyimpan digit yang sedang dimasukkan pengguna dalam \texttt{currentInput}.
+    \item Memantau status sistem: Melacak apakah kalkulator dalam kondisi error, sedang menerima input, atau menunggu operator.
+\end{itemize}
+
+\subsubsection*{Sub-problem 3: Arithmetic Operations (Operasi Matematika)}
+\begin{itemize}
+    \item Menangani operasi dasar: Implementasi penambahan, pengurangan, perkalian, dan pembagian.
+    \item Deteksi kondisi error: Mengidentifikasi pembagian dengan nol dan overflow numerik.
+    \item Menjaga akurasi perhitungan: Menggunakan tipe data \texttt{double} untuk presisi yang baik.
+\end{itemize}
+
+\subsubsection*{Sub-problem 4: Output Formatting (Pemformatan Keluaran)}
+\begin{itemize}
+    \item Format tampilan konsisten: Menampilkan hasil dalam lebar tetap 10 karakter.
+    \item Notasi ilmiah untuk nilai ekstrem: Mengkonversi angka sangat besar atau sangat kecil ke format ilmiah.
+    \item Pembersihan angka: Menghilangkan nol yang tidak penting setelah titik desimal.
+    \item Penanganan error yang ramah pengguna: Menampilkan ``Error.'' untuk kondisi tidak valid.
+\end{itemize}
+
+\subsection{Pattern Recognition (Pengenalan Pola)}
+
+\subsubsection*{Pola Format Input yang Unik}
+\begin{itemize}
+    \item Input menggunakan pola bracketed: setiap tombol diapit tanda kurung siku \texttt{[} dan \texttt{]}.
+    \item Urutan tombol mengikuti alur natural seperti kalkulator fisik.
+    \item Pola ini memungkinkan parsing yang konsisten meskipun formatnya tidak biasa.
+\end{itemize}
+
+\subsubsection*{Pola Transisi Status yang Sistematis}
+\begin{itemize}
+    \item Mode Input Angka: Pengguna memasukkan digit berturut-turut membentuk angka.
+    \item Mode Operator: Setelah operator, sistem siap menerima angka berikutnya.
+    \item Mode Reset: Tombol C mengembalikan semua ke kondisi awal.
+    \item Mode Error: Kondisi error mengunci sistem hingga dilakukan reset.
+\end{itemize}
+
+\subsubsection*{Pola Pembentukan Angka yang Intuitif}
+\begin{itemize}
+    \item Digit ditambahkan secara berurutan membentuk angka lengkap.
+    \item Titik desimal hanya boleh ada satu kali dalam satu angka.
+    \item Pembatasan 8 digit mencegah overflow tampilan.
+\end{itemize}
+
+\subsubsection*{Pola Alur Perhitungan yang Natural}
+\begin{lstlisting}
+Input Angka Pertama → Operator → Input Angka Kedua → Operator/Tanda Sama Dengan → Hasil
+\end{lstlisting}
+Operator tidak langsung menghitung, tetapi "mengingat" operasi yang akan dilakukan, sedangkan tanda sama dengan (=) bertindak sebagai pemicu perhitungan akhir.
+
+\subsection{Abstraction (Abstraksi)}
+
+\subsubsection*{Abstraksi Kalkulator sebagai Mesin Status Terbatas}
+Kalkulator ini dapat dibayangkan sebagai mesin yang memiliki beberapa modus operasi:
+\begin{itemize}
+    \item \texttt{STATUS\_MENUNGGU}: Siap menerima input pertama.
+    \item \texttt{STATUS\_MENERIMA\_INPUT}: Sedang mengumpulkan digit untuk membentuk angka.
+    \item \texttt{STATUS\_MENUNGGU\_OPERATOR}: Telah menerima angka dan menunggu perintah operasi.
+    \item \texttt{STATUS\_ERROR}: Terjadi masalah dan perlu direset.
+\end{itemize}
+
+\subsubsection*{Abstraksi Aliran Data yang Terstruktur}
+\begin{lstlisting}
+Input Mentah → Ekstraksi Perintah → Pembaruan Status → Perhitungan → Format Tampilan → Output
+\end{lstlisting}
+
+\subsubsection*{Abstraksi Operasi Matematika sebagai Fungsi Universal}
+Setiap operasi diabstraksi menjadi fungsi \texttt{operation(op, a, b)} yang:
+\begin{itemize}
+    \item Menerima jenis operasi dan dua angka.
+    \item Mengembalikan hasil perhitungan atau status error.
+    \item Menangani kasus-kasus khusus seperti pembagian dengan nol.
+\end{itemize}
+
+\subsubsection*{Abstraksi Tampilan yang Adaptif}
+\begin{itemize}
+    \item Mode Normal: Angka ditampilkan dalam format desimal biasa.
+    \item Mode Ilmiah: Untuk angka ekstrem, menggunakan format \texttt{X.XXXX±YY}.
+    \item Mode Error: Menampilkan pesan error yang konsisten.
+\end{itemize}
+
+\subsection{Algorithm Design (Desain Algoritma)}
+
+\subsubsection*{Algoritma Utama Pengolahan Test Case}
+\begin{lstlisting}
+Baca jumlah test case dari input
+Untuk setiap test case:
+    Buat kalkulator baru
+    Baca string input dan ekstrak semua tombol dalam []
+    Untuk setiap tombol yang diekstrak:
+        Proses tombol tersebut sesuai logika kalkulator
+    Dapatkan hasil format dan tampilkan
+\end{lstlisting}
+
+\subsubsection*{Algoritma Pemrosesan Tombol}
+\begin{lstlisting}
+ProsesTombol(tombol):
+    Jika kalkulator dalam status error dan tombol bukan 'C': Abaikan
+    Jika tombol adalah 'C': Lakukan reset lengkap
+    Jika tombol adalah digit atau '.': Proses sebagai input angka
+    Selain itu: Proses sebagai operator
+\end{lstlisting}
+
+\subsubsection*{Algoritma Pembentukan Angka dari Digit}
+\begin{lstlisting}
+ProsesDigitAtauTitik(karakter):
+    Jika karakter adalah '.':
+        Jika belum mulai input: Mulai dengan "0."
+        Jika belum ada titik: Tambahkan titik
+    Jika karakter adalah '0':
+        Aturan khusus untuk menghindari banyak nol di depan
+    Jika karakter adalah digit 1-9:
+        Tambahkan digit selama belum mencapai batas 8 digit
+\end{lstlisting}
+
+\subsubsection*{Algoritma Eksekusi Operator}
+\begin{lstlisting}
+ProsesOperator(operator):
+    Jika ada input angka yang sedang dibangun:
+        Ubah string input menjadi angka
+        Jika ada operator sebelumnya: 
+            Lakukan operasi dengan angka sebelumnya dan angka baru
+        Jika tidak:
+            Simpan angka sebagai nilai awal
+        Reset state input
+    Simpan operator untuk operasi berikutnya (kecuali '=')
+\end{lstlisting}
+
+\section{Algoritma yang Digunakan}
+
 \subsection{Deskripsi Algoritma}
-Algoritma ini menggunakan pendekatan FSM untuk memproses stream input dan mengelola logika perhitungan.
+Kalkulator ini mengimplementasikan arsitektur berbasis status (\textit{state-based architecture}) dengan pendekatan pemrograman berorientasi objek. Algoritma intinya terdiri dari tiga komponen utama yang bekerja sama:
+
+\subsubsection*{1. Algoritma Manajemen Status}
+Algoritma ini bertanggung jawab menjaga konsistensi internal kalkulator melalui variabel-variabel status:
+\begin{itemize}
+    \item \texttt{currentValue}: Menyimpan hasil kumulatif dari semua perhitungan.
+    \item \texttt{currentInput}: Menampung digit-digit yang sedang dimasukkan pengguna.
+    \item \texttt{lastOperator}: Mengingat operasi terakhir yang akan diterapkan.
+    \item \texttt{errorState}: Penanda apakah kalkulator dalam kondisi error.
+\end{itemize}
+
+\subsubsection*{2. Algoritma Pemrosesan Input}
+Algoritma ini menggunakan teknik parsing berbasis token untuk mengekstrak perintah dari format input yang khusus:
+\begin{itemize}
+    \item Memindai string input untuk menemukan karakter \texttt{[}.
+    \item Mengambil karakter berikutnya sebagai perintah tombol.
+    \item Melompati hingga karakter \texttt{]} untuk melanjutkan pencarian.
+\end{itemize}
+
+\subsubsection*{3. Algoritma Perhitungan Bertahap}
+Algoritma ini menggunakan strategi evaluasi tertunda (\textit{lazy evaluation}) di mana perhitungan tidak langsung dilakukan saat operator ditekan, melainkan ditunggu hingga:
+\begin{itemize}
+    \item Operator baru ditekan (yang akan memicu operasi dengan operator sebelumnya).
+    \item Tombol '=' ditekan (yang menyelesaikan ekspresi matematika).
+\end{itemize}
 
 \subsection{Prinsip Kerja}
-Untuk mengelola logika kalkulator yang kontekstual, algoritma membandingkan Keadaan (State) saat ini dengan Input (Keystroke) yang diterima:
-\begin{itemize}
-    \item Transisi dipicu dari Keadaan Awal (Idle) ke Keadaan Baru (misalnya, Input Angka atau Operator Pending) berdasarkan jenis Keystroke.
-    \item Perhitungan dipicu hanya jika Keystroke adalah Operator baru atau [=] dan kalkulator berada dalam Keadaan Input Angka.
-    \item Logika "Headstrong" (misalnya, operator berturut-turut, batasan 8 digit) diterapkan untuk menentukan Keadaan Berikutnya (Next State) dan memperbarui register internal.
-\end{itemize}
-Setelah semua Keystroke diproses, Output Akhir diformat berdasarkan aturan pembulatan 8 digit dan Notasi Ilmiah.
 
-\subsection{Mengapa Menggunakan Algoritma ini?}
-Kalkulator merupakan salah satu sistem yang menggunakan state dan dipicu oleh event, yaitu penekanan tombol. FSM secara alami membagi seluruh proses penggunaan kalkulator menjadi beberapa mode operasi yang berbeda, atau "keadaan" (state)
+\subsubsection*{Prinsip 1: Pembangunan Angka Dua Fase}
+\begin{lstlisting}
+Fase 1: Konstruksi String
+   [1][2][.][3] → Membangun string "12.3" → Konversi ke double 12.3
+
+Fase 2: Eksekusi Operasi
+   nilai_sekarang (5.0) [+] angka_baru (12.3) → operasi('+', 5.0, 12.3) → 17.3
+\end{lstlisting}
+
+\subsubsection*{Prinsip 2: Akumulasi Berbasis Memori}
+\begin{itemize}
+    \item Kalkulator menyimpan hasil sementara di \texttt{currentValue}.
+    \item Input baru akan menggantikan \texttt{currentValue} hanya jika tidak ada operator yang tertunda.
+    \item Setiap operator bekerja pada pasangan \texttt{(nilai\_sekarang, input\_baru)}.
+\end{itemize}
+
+\subsubsection*{Prinsip 3: Propagasi Error yang Aman}
+\begin{itemize}
+    \item Setelah error terjadi, kalkulator mengabaikan semua input hingga direset.
+    \item Kondisi error meliputi: pembagian dengan nol, overflow, dan operasi tidak valid.
+    \item Status error tetap bertahan hingga dilakukan reset eksplisit dengan tombol \texttt{C}.
+\end{itemize}
+
+\subsubsection*{Prinsip 4: Format Output yang Cerdas}
+\begin{lstlisting}
+formatOutput(angka):
+    jika |angka| sangat mendekati nol: tampilkan "0."
+    jika |angka| sangat besar: tampilkan "Error."
+    jika |angka| dalam rentang normal:
+        hitung jumlah digit integer dan desimal
+        format dengan presisi yang sesuai
+        hapus nol di belakang yang tidak perlu
+    jika |angka| sangat besar atau sangat kecil:
+        konversi ke notasi ilmiah X.XXXX±YY
+\end{lstlisting}
+
+\subsection{Mengapa Algoritma Ini Dipilih}
 \begin{enumerate}
-    \item \textbf{Struktur Jelas:} FSM membagi operasi kalkulator menjadi mode yang berbeda (misalnya, Input Angka, Operator Tertunda, Error).
-    \item \textbf{Menangani Aturan Khusus:} Aturan "keras kepala" kalkulator (seperti mengabaikan operator berulang atau batas 8 digit) dapat dimodelkan secara elegan sebagai transisi atau aksi di dalam keadaan. Misalnya, jika operator ditekan berulang, FSM hanya menimpa operator sebelumnya.
-    \item \textbf{Logika Sekuensial:} FSM secara alami mendukung perhitungan kiri-ke-kanan tanpa preseden, karena setiap operator yang masuk akan memicu perhitungan tertunda sebelum operator baru disimpan.
+    \item \textbf{Ketangguhan terhadap Variasi Input} \\
+    Algoritma ini dipilih karena kemampuannya menangani format input yang tidak biasa sambil mempertahankan logika kalkulator yang intuitif. Pendekatan berbasis status memastikan konsistensi bahkan ketika urutan input tidak terduga.
+
+    \item \textbf{Efisiensi Memori yang Optimal} \\
+    Dengan hanya menyimpan status yang penting dan menggunakan buffer berukuran tetap untuk input, algoritma ini sangat efisien dalam penggunaan memori, cocok untuk lingkungan dengan sumber daya terbatas.
+
+    \item \textbf{Stabilitas Numerik yang Terjamin} \\
+    Penggunaan tipe data \texttt{double} untuk perhitungan dan penanganan overflow atau underflow yang eksplisit membuat algoritma stabil secara numerik untuk rentang nilai yang sangat luas.
+
+    \item \textbf{Pengalaman Pengguna yang Dipertahankan} \\
+    Algoritma mempertahankan perilaku yang diharapkan oleh pengguna:
+    \begin{itemize}
+        \item Umpan balik langsung: Perubahan status langsung terlihat.
+        \item Pencegahan error: Validasi input mencegah status yang tidak valid
+        \item Alur natural: Mirip dengan penggunaan kalkulator fisik tradisional
+    \end{itemize}
 \end{enumerate}
 
-\section{Source Code}
-    \begin{lstlisting}
-    #include <iostream>
-    #include <string>
-    #include <sstream>
-    #include <cmath>
-    #include <cstdio>
-    #include <cstring>
-    #include <cstdlib>
+\section{Kode Lengkap}
+
+\begin{lstlisting}
+#include <cstdio>
+#include <cmath>
+#include <cstring>
+ 
+class Calculator {
+private:
+    double currentValue;
+    char currentInput[12];
+    int inputLength;
+    int digitCount;
+    bool hasDot;
+    bool hasInput;
+    bool errorState;
+    char lastOperator;
     
-    using namespace std;
-    
-    double apply_op(char op, double a, double b, bool &error) {
+    double operation(char op, double a, double b) {
         double result;
         switch (op) {
             case '+': result = a + b; break;
             case '-': result = a - b; break;
             case 'x': result = a * b; break;
-            case ':': 
-                if (b == 0) {
-                    error = true;
-                    return 0;
+            case ':':
+                if (b == 0.0) {
+                    errorState = true;
+                    return 0.0;
                 }
                 result = a / b;
                 break;
+            default: return a;
         }
         if (fabs(result) >= 1e100) {
-            error = true;
-            return 0;
+            errorState = true;
+            return 0.0;
         }
         return result;
     }
     
-    string format_fixed(double x) {
-        if (x == 0.0) {
-            return "0.";
-        }
-        bool negative = (x < 0);
-        x = fabs(x);
-        
-        int integer_digits = (x < 1.0) ? 1 : static_cast<int>(floor(log10(x))) + 1;
-        int decimal_places = 8 - integer_digits;
-        if (decimal_places < 0) decimal_places = 0;
-        
-        char buffer[50];
-        sprintf(buffer, "%.*f", decimal_places, x);
-        string s(buffer);
-        
-        size_t dot = s.find('.');
-        if (dot != string::npos) {
-            s.erase(s.find_last_not_of('0') + 1);
-            if (s.back() == '.') {
-                // keep the decimal point
-            }
-        } else {
-            s += '.';
-        }
-        
-        if (negative) {
-            s = '-' + s;
-        }
-        return s;
-    }
-    
-    string format_scientific(double x) {
-        if (x == 0.0) {
-            return "0.";
-        }
-        bool negative = (x < 0);
-        x = fabs(x);
-        
-        int exponent = static_cast<int>(floor(log10(x)));
-        double mantissa = x / pow(10.0, exponent);
-        
-        mantissa = round(mantissa * 10000.0) / 10000.0;
-        
-        if (mantissa >= 10.0) {
-            mantissa /= 10.0;
-            exponent++;
-        }
-        
-        char buffer[20];
-        sprintf(buffer, "%.4f", mantissa);
-        string s_m(buffer);
-        
-        size_t dot = s_m.find('.');
-        if (dot != string::npos) {
-            s_m.erase(s_m.find_last_not_of('0') + 1);
-            if (s_m.back() == '.') {
-                // Keep decimal point, no trailing zeros
-            }
-        }
-        
-        string exp_str;
-        if (exponent >= 0) {
-            exp_str = " ";
-        } else {
-            exp_str = "-";
-            exponent = -exponent;
-        }
-        char exp_buffer[3];
-        sprintf(exp_buffer, "%02d", exponent);
-        exp_str += exp_buffer;
-        
-        string result = s_m + exp_str;
-        if (negative) {
-            result = '-' + result;
-        }
-        return result;
-    }
-    
-    string format_value(double x) {
+    void formatOutput(double x, char *output) {
         if (fabs(x) <= 1e-100) {
-            return "0.";
-        } else if (fabs(x) >= 1e100) {
-            return "Error.";
-        } else {
-            double abs_x = fabs(x);
-            
-            // Check if we need scientific notation
-            // If rounded integer needs > 8 digits, use scientific
-            double rounded_int = round(abs_x);
-            if (rounded_int >= 1e8) {
-                return format_scientific(x);
-            }
-            
-            // Check if rounding to 8 digits would give all zeros for small numbers
-            if (abs_x < 5e-8) {
-                // Would round to 0 in fixed format with 8 digits
-                if (abs_x > 1e-100) {
-                    return format_scientific(x);
-                } else {
-                    return "0.";
-                }
-            }
-            
-            return format_fixed(x);
+            sprintf(output, "%10s", "0.");
+            return;
         }
-    }
-    
-    string pad_to_10(const string &s) {
-        int len = s.length();
-        if (len < 10) {
-            return string(10 - len, ' ') + s;
-        } else {
-            return s;
+        if (fabs(x) >= 1e100) {
+            sprintf(output, "%10s", "Error.");
+            return;
         }
-    }
-    
-    int main() {
-        int t;
-        cin >> t;
-        string line;
-        getline(cin, line); // skip newline after t
         
-        for (int i = 0; i < t; i++) {
-            getline(cin, line);
-            stringstream ss(line);
-            string key;
+        double abs_x = fabs(x);
+        bool negative = (x < 0);
+        
+        if (round(abs_x) >= 1e8 || (abs_x < 5e-8 && abs_x > 1e-100)) {
+            int exp = (int)floor(log10(abs_x));
+            double rounding = abs_x / pow(10.0, exp);
+            rounding = round(rounding * 10000.0) / 10000.0;
             
-            double current_value = 0.0;
-            string current_input = "";
-            char last_operator = 0;
-            bool error = false;
-            bool has_input = false; // Track if we're currently inputting a number
-    
-            while (ss >> key) {
-                if (error && key != "[C]") {
-                    continue;
-                }
-                
-                if (key == "[C]") {
-                    current_value = 0.0;
-                    current_input = "";
-                    last_operator = 0;
-                    error = false;
-                    has_input = false;
-                } else {
-                    char c = key[1];
-                    
-                    if (c == '.' || (c >= '0' && c <= '9')) {
-                        // Digit or decimal point
-                        
-                        if (c == '.') {
-                            if (!has_input) {
-                                // Start new number with leading decimal point
-                                current_input = "0.";
-                                has_input = true;
-                            } else if (current_input.find('.') == string::npos) {
-                                // Add decimal point if not already present
-                                current_input += '.';
-                            }
-                            // Otherwise ignore duplicate decimal point
-                        } else if (c == '0') {
-                            if (!has_input) {
-                                // Start inputting, but don't add leading zeros yet
-                                current_input = "0";
-                                has_input = true;
-                            } else if (current_input == "0") {
-                                // Multiple leading zeros - ignore
-                            } else {
-                                // Count digits
-                                int digit_count = 0;
-                                for (char ch : current_input) {
-                                    if (ch >= '0' && ch <= '9') {
-                                        digit_count++;
-                                    }
-                                }
-                                if (digit_count < 8) {
-                                    current_input += c;
-                                }
-                            }
-                        } else {
-                            // Non-zero digit
-                            if (!has_input) {
-                                current_input = "";
-                                current_input += c;
-                                has_input = true;
-                            } else if (current_input == "0") {
-                                // Replace leading zero
-                                current_input = "";
-                                current_input += c;
-                            } else {
-                                // Count digits
-                                int digit_count = 0;
-                                for (char ch : current_input) {
-                                    if (ch >= '0' && ch <= '9') {
-                                        digit_count++;
-                                    }
-                                }
-                                if (digit_count < 8) {
-                                    current_input += c;
-                                }
-                            }
-                        }
-                    } else {
-                        // Operator or equal sign
-                        
-                        if (has_input && !current_input.empty()) {
-                            // Process the current input
-                            double num = stod(current_input);
-                            if (last_operator != 0) {
-                                current_value = apply_op(last_operator, current_value, num, error);
-                            } else {
-                                current_value = num;
-                            }
-                            current_input = "";
-                            has_input = false;
-                        }
-                        
-                        if (c == '=') {
-                            last_operator = 0;
-                        } else {
-                            // It's an operator (+, -, x, :)
-                            last_operator = c;
-                        }
-                    }
+            if (rounding >= 10.0) {
+                rounding /= 10.0;
+                exp++;
+            }
+            
+            char temp[20];
+            sprintf(temp, "%.4f", rounding);
+            
+            size_t len = strlen(temp);
+            size_t dot = 0;
+            for (size_t j = 0; j < len; j++) {
+                if (temp[j] == '.') {
+                    dot = j;
+                    break;
                 }
             }
-    
-            if (error) {
-                cout << pad_to_10("Error.") << endl;
+            
+            if (dot > 0) {
+                size_t lastNum = len - 1;
+                while (lastNum > dot && temp[lastNum] == '0') {
+                    lastNum--;
+                }
+                temp[lastNum + 1] = '\0';
+            }
+            
+            char expSign = (exp >= 0) ? ' ' : '-';
+            int expVal = (exp >= 0) ? exp : -exp;
+            
+            char result[20];
+            if (negative)
+                sprintf(result, "-%s%c%02d", temp, expSign, expVal);
+            else
+                sprintf(result, "%s%c%02d", temp, expSign, expVal);
+            
+            sprintf(output, "%10s", result);
+        } else {
+            int numInit = (abs_x < 1.0) ? 1 : (int)floor(log10(abs_x)) + 1;
+            int numDecimal = 8 - numInit;
+            if (numDecimal < 0) numDecimal = 0;
+            
+            char temp[20];
+            sprintf(temp, "%.*f", numDecimal, abs_x);
+            
+            size_t len = strlen(temp);
+            size_t dot = 0;
+            for (size_t j = 0; j < len; j++) {
+                if (temp[j] == '.') {
+                    dot = j;
+                    break;
+                }
+            }
+            
+            if (dot > 0) {
+                size_t lastNum = len - 1;
+                while (lastNum > dot && temp[lastNum] == '0')
+                    lastNum--;
+                temp[lastNum + 1] = '\0';
             } else {
-                string output = format_value(current_value);
-                output = pad_to_10(output);
-                cout << output << endl;
+                strcat(temp, ".");
+            }
+            
+            char result[20];
+            if (negative)
+                sprintf(result, "-%s", temp);
+            else
+                strcpy(result, temp);
+            
+            sprintf(output, "%10s", result);
+        }
+    }
+    
+    void digitorDot(char c) {
+        if (c == '.') {
+            if (!hasInput) {
+                currentInput[0] = '0';
+                currentInput[1] = '.';
+                inputLength = 2;
+                digitCount = 1;
+                hasDot = hasInput = true;
+            } else if (!hasDot) {
+                currentInput[inputLength++] = '.';
+                hasDot = true;
+            }
+        } else if (c == '0') {
+            if (!hasInput) {
+                currentInput[0] = '0';
+                inputLength = digitCount = 1;
+                hasInput = true;
+            } else if (!(inputLength == 1 && currentInput[0] == '0' && !hasDot) && digitCount < 8) {
+                currentInput[inputLength++] = c;
+                digitCount++;
+            }
+        } else {
+            if (!hasInput) {
+                currentInput[0] = c;
+                inputLength = digitCount = 1;
+                hasInput = true;
+            } else if (inputLength == 1 && currentInput[0] == '0' && !hasDot) {
+                currentInput[0] = c;
+            } else if (digitCount < 8) {
+                currentInput[inputLength++] = c;
+                digitCount++;
             }
         }
-        return 0;
     }
-    \end{lstlisting} \\
+    
+    void operators(char op) {
+        if (hasInput && inputLength > 0) {
+            currentInput[inputLength] = '\0';
+            double num = atof(currentInput);
+            
+            if (lastOperator != 0)
+                currentValue = operation(lastOperator, currentValue, num);
+            else
+                currentValue = num;
+            
+            inputLength = digitCount = 0;
+            hasDot = hasInput = false;
+        }
+        lastOperator = (op == '=') ? 0 : op;
+    }
+    
+public:
+    Calculator() {
+        reset();
+    }
+    
+    void reset() {
+        currentValue = 0.0;
+        inputLength = digitCount = 0;
+        hasDot = hasInput = errorState = false;
+        lastOperator = 0;
+    }
+    
+    void processButton(char button) {
+        if (errorState && button != 'C') {
+            return;
+        }
+        
+        if (button == 'C') {
+            reset();
+        } else if (button == '.' || (button >= '0' && button <= '9')) {
+            digitorDot(button);
+        } else {
+            operators(button);
+        }
+    }
+    
+    void getResult(char *output) {
+        if (errorState)
+            sprintf(output, "%10s", "Error.");
+        else
+            formatOutput(currentValue, output);
+    }
+};
+ 
+int main() {
+    int t;
+    scanf("%d\n", &t);
+    
+    char input[2048];
+    
+    while (t--) {
+        fgets(input, sizeof(input), stdin);
+        
+        Calculator calc;
+        
+        int len = strlen(input);
+        for (int i = 0; i < len; i++) {
+            if (input[i] != '[') continue;
+            
+            i++;
+            if (i >= len) break;
+            char c = input[i];
+            
+            calc.processButton(c);
+            
+            while (i < len && input[i] != ']') i++;
+        }
+        
+        char output[16];
+        calc.getResult(output);
+        
+        printf("%s\n", output);
+    }
+    
+    return 0;
+} 
+\end{lstlisting}
 
+\section{Class Calculator yang Digunakan}
+
+\begin{lstlisting}
+class Calculator {
+private:
+    double currentValue;
+    char currentInput[12];
+    int inputLength;
+    int digitCount;
+    bool hasDot;
+    bool hasInput;
+    bool errorState;
+    char lastOperator;
+    // ... method-method private
+public:
+    Calculator();
+    void reset();
+    void processButton(char button);
+    void getResult(char *output);
+};
+\end{lstlisting}
+
+\subsection{Penjelasan Struktur Class}
+
+Class \texttt{Calculator} adalah representasi dari sebuah kalkulator digital yang mensimulasikan perilaku kalkulator fisik. Class ini menggunakan prinsip \textbf{encapsulation} untuk menyembunyikan detail implementasi internal dan hanya mengekspos interface yang diperlukan untuk berinteraksi dengan kalkulator.
+
+\subsubsection{Mengapa Menggunakan Class?}
+
+Pendekatan OOP dengan class memberikan beberapa keuntungan fundamental:
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Encapsulation (Pembungkusan Data dan Fungsi)}
+\begin{itemize}
+    \item Semua data dan fungsi yang berkaitan dengan kalkulator dibungkus dalam satu unit
+    \item Data internal dilindungi dari akses langsung dari luar
+    \item Pengguna hanya berinteraksi melalui interface publik yang telah ditentukan
+\end{itemize}
+
+\item \textbf{Data Hiding (Penyembunyian Data)}
+\begin{itemize}
+    \item Member private tidak bisa diakses langsung dari luar class
+    \item Ini mencegah modifikasi data yang tidak sah atau tidak konsisten
+    \item State internal kalkulator terjaga integritasnya
+\end{itemize}
+
+\item \textbf{Reusability (Dapat Digunakan Kembali)}
+\begin{itemize}
+    \item Class Calculator bisa diinstansiasi berkali-kali
+    \item Setiap instance memiliki state-nya sendiri yang independen
+    \item Mudah digunakan di berbagai bagian program
+\end{itemize}
+
+\item \textbf{Maintainability (Mudah Dipelihara)}
+\begin{itemize}
+    \item Perubahan implementasi internal tidak mempengaruhi kode yang menggunakan class
+    \item Bug mudah diisolasi dalam method tertentu
+    \item Testing lebih terstruktur karena setiap method bisa ditest secara terpisah
+\end{itemize}
+\end{enumerate}
+
+\section{Member Variables (Variabel Anggota)}
+
+\subsection{State Variables}
+
+\begin{lstlisting}
+private:
+    double currentValue;
+    char currentInput[12];
+    int inputLength;
+    int digitCount;
+    bool hasDot;
+    bool hasInput;
+    bool errorState;
+    char lastOperator;
+\end{lstlisting}
+
+\subsubsection{double currentValue}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Menyimpan nilai hasil perhitungan terakhir yang telah diproses
+    \item Berfungsi sebagai akumulator untuk operasi matematika
+    \item Merupakan nilai yang akan ditampilkan ketika tidak ada input baru
+\end{itemize}
+
+\textbf{Mengapa menggunakan double?}
+\begin{itemize}
+    \item Tipe data \texttt{double} memberikan presisi tinggi untuk bilangan desimal (sekitar 15-17 digit signifikan)
+    \item Mendukung range nilai yang sangat besar ($\pm 10^{308}$)
+    \item Cocok untuk operasi matematika yang membutuhkan akurasi tinggi
+    \item Compatible dengan fungsi-fungsi matematika standar seperti \texttt{fabs()}, \texttt{log10()}, \texttt{pow()}
+\end{itemize}
+
+\begin{examplebox}[Cara Kerja]
+Contoh: 5 + 3 = 8
+\begin{itemize}[leftmargin=*]
+    \item Saat user menekan '5': currentValue masih 0 (belum diupdate)
+    \item Saat user menekan '+': currentValue = 5 (nilai pertama disimpan)
+    \item Saat user menekan '3': currentValue masih 5 (menunggu operator selesai)
+    \item Saat user menekan '=': currentValue = 8 (hasil operasi 5+3)
+\end{itemize}
+\end{examplebox}
+
+\subsubsection{char currentInput[12]}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Buffer temporary untuk menyimpan digit yang sedang diketik user
+    \item Menampung string representasi angka sebelum dikonversi menjadi double
+    \item Ukuran 12 karakter: 8 digit angka + 1 titik desimal + 1 tanda minus + 1 null terminator + 1 buffer
+\end{itemize}
+
+\textbf{Mengapa menggunakan char array?}
+\begin{itemize}
+    \item Lebih efisien dalam memory dibanding string untuk panjang tetap
+    \item Mudah dikonversi ke double menggunakan \texttt{atof()}
+    \item Direct manipulation karakter lebih cepat
+    \item Tidak perlu dynamic memory allocation
+\end{itemize}
+
+\begin{examplebox}[Cara Kerja]
+User mengetik: "123.45"
+\begin{verbatim}
+currentInput[0] = '1'  →  "1"
+currentInput[1] = '2'  →  "12"
+currentInput[2] = '3'  →  "123"
+currentInput[3] = '.'  →  "123."
+currentInput[4] = '4'  →  "123.4"
+currentInput[5] = '5'  →  "123.45"
+currentInput[6] = '\0' →  string terminator
+
+Saat operator ditekan:
+atof(currentInput) → 123.45 (double)
+\end{verbatim}
+\end{examplebox}
+
+\subsubsection{int inputLength}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Melacak posisi terakhir karakter dalam currentInput
+    \item Menentukan di mana karakter berikutnya akan ditempatkan
+    \item Membantu dalam validasi panjang input
+\end{itemize}
+
+\textbf{Mengapa perlu inputLength?}
+\begin{itemize}
+    \item Untuk mengetahui berapa banyak karakter yang sudah diinput
+    \item Mencegah buffer overflow pada currentInput
+    \item Mempermudah proses penambahan karakter baru
+    \item Efisien karena tidak perlu menghitung panjang string berulang kali
+\end{itemize}
+
+\begin{examplebox}[Cara Kerja]
+\begin{verbatim}
+Kondisi awal: inputLength = 0, currentInput = ""
+
+User input '7': 
+  currentInput[inputLength++] = '7'
+  → currentInput[0] = '7', inputLength = 1
+
+User input '5':
+  currentInput[inputLength++] = '5'  
+  → currentInput[1] = '5', inputLength = 2
+
+Hasil: currentInput = "75", inputLength = 2
+\end{verbatim}
+\end{examplebox}
+
+\subsubsection{int digitCount}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Menghitung jumlah digit signifikan (tidak termasuk titik desimal)
+    \item Membatasi input maksimal 8 digit sesuai spesifikasi kalkulator
+    \item Mencegah overflow tampilan
+\end{itemize}
+
+\textbf{Perbedaan dengan inputLength:}
+
+\begin{examplebox}[Perbedaan inputLength dan digitCount]
+\begin{verbatim}
+Input: "0.123"
+inputLength = 5  (termasuk '0' di depan dan '.')
+digitCount = 3   (hanya '1', '2', '3' yang dihitung)
+
+Input: "123.456"
+inputLength = 7  (semua karakter termasuk '.')
+digitCount = 6   (semua digit kecuali '.')
+\end{verbatim}
+\end{examplebox}
+
+\textbf{Mengapa perlu digitCount terpisah?}
+\begin{itemize}
+    \item Titik desimal tidak boleh dihitung sebagai digit
+    \item Leading zero "0." tidak dihitung sebagai digit signifikan
+    \item Limit 8 digit adalah untuk digit signifikan, bukan panjang string
+    \item Memudahkan validasi input sesuai aturan kalkulator
+\end{itemize}
+
+\subsubsection{bool hasDot}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Flag untuk menandai apakah titik desimal sudah diinput
+    \item Mencegah input lebih dari satu titik desimal dalam satu angka
+    \item Mengontrol perilaku input digit setelah titik desimal
+\end{itemize}
+
+\textbf{Mengapa perlu hasDot?}
+\begin{itemize}
+    \item Satu angka hanya boleh memiliki maksimal satu titik desimal
+    \item Tanpa flag ini, user bisa input "12.34.56" yang invalid
+    \item Mempengaruhi logika penanganan digit '0' di awal
+\end{itemize}
+
+\begin{examplebox}[Cara Kerja]
+\begin{verbatim}
+Scenario 1: Input valid
+hasDot = false → user tekan '.' → hasDot = true
+user tekan '.' lagi → ditolak karena hasDot sudah true
+
+Scenario 2: Leading zero
+hasDot = false, input = "0" 
+user tekan digit '5' → ganti jadi "5"
+
+hasDot = true, input = "0."
+user tekan digit '5' → jadi "0.5"
+\end{verbatim}
+\end{examplebox}
+
+\subsubsection{bool hasInput}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Menandai apakah user sudah mulai mengetik angka
+    \item Membedakan antara "belum ada input" vs "input adalah 0"
+    \item Mengontrol perilaku input karakter pertama
+\end{itemize}
+
+\textbf{Mengapa perlu hasInput?}
+\begin{itemize}
+    \item Untuk mengetahui apakah currentInput kosong atau berisi nilai
+    \item Membedakan state awal dengan state setelah user mulai input
+    \item Mempengaruhi bagaimana angka pertama diperlakukan
+\end{itemize}
+
+\begin{examplebox}[Cara Kerja]
+\begin{verbatim}
+Awal: hasInput = false, currentInput = ""
+
+Case 1: User tekan '5'
+  if (!hasInput) → true, ini input pertama
+  currentInput[0] = '5'
+  hasInput = true
+  
+Case 2: User tekan '.'
+  if (!hasInput) → true, ini input pertama
+  currentInput = "0."  (tambahkan leading zero)
+  hasInput = true
+
+Case 3: Setelah operator
+  hasInput direset ke false
+  Siap menerima angka baru
+\end{verbatim}
+\end{examplebox}
+
+\subsubsection{bool errorState}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Menandai apakah kalkulator dalam kondisi error
+    \item Mencegah operasi lebih lanjut sampai di-reset
+    \item Triggered oleh division by zero atau overflow
+\end{itemize}
+
+\textbf{Mengapa perlu errorState?}
+\begin{itemize}
+    \item Untuk menghentikan operasi setelah terjadi error
+    \item Mencegah error berantai (error yang memicu error lain)
+    \item User harus menekan 'C' (Clear) untuk reset
+    \item Sesuai dengan perilaku kalkulator fisik
+\end{itemize}
+
+\begin{examplebox}[Cara Kerja]
+\begin{verbatim}
+Normal operation:
+errorState = false → semua operasi berjalan normal
+
+Division by zero:
+10 / 0 → operation() deteksi b == 0
+       → errorState = true
+       → return 0.0
+
+Setelah error:
+User tekan '+' → processButton() cek errorState
+              → if(errorState && button != 'C') return;
+              → operasi ditolak
+              
+User tekan 'C' → reset() dipanggil
+              → errorState = false
+              → kalkulator kembali normal
+\end{verbatim}
+\end{examplebox}
+
+\subsubsection{char lastOperator}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Menyimpan operator terakhir yang ditekan (+, -, x, :)
+    \item Menentukan operasi apa yang akan dilakukan pada angka berikutnya
+    \item Di-reset ke 0 setelah operator '=' ditekan
+\end{itemize}
+
+\textbf{Mengapa menggunakan char?}
+\begin{itemize}
+    \item Operator disimpan sebagai karakter tunggal ('+', '-', 'x', ':')
+    \item Nilai 0 (null character) menandakan "tidak ada operator pending"
+    \item Efisien dalam memory (1 byte)
+    \item Mudah diperbandingkan dalam switch statement
+\end{itemize}
+
+\begin{examplebox}[Cara Kerja]
+Contoh: 5 + 3 - 2 =
+\begin{verbatim}
+Step 1: User input '5', tekan '+'
+  currentValue = 5
+  lastOperator = '+'
+  
+Step 2: User input '3', tekan '-'
+  operation('+', 5, 3) → currentValue = 8
+  lastOperator = '-'
+  
+Step 3: User input '2', tekan '='
+  operation('-', 8, 2) → currentValue = 6
+  lastOperator = 0  (reset karena '=')
+
+Jika langsung tekan operator tanpa angka:
+lastOperator != 0 → ada operator pending
+Operator baru mengganti lastOperator lama
+\end{verbatim}
+\end{examplebox}
+
+\section{Constructor}
+
+\subsection{Constructor}
+
+\begin{lstlisting}
+public:
+    Calculator() {
+        reset();
+    }
+\end{lstlisting}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Constructor adalah method khusus yang dipanggil otomatis saat object dibuat
+    \item Menginisialisasi state awal kalkulator
+    \item Memanggil method \texttt{reset()} untuk set nilai default
+\end{itemize}
+
+\subsubsection{Mengapa menggunakan Constructor?}
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Automatic Initialization}
+\begin{itemize}
+    \item Tidak perlu manual memanggil fungsi inisialisasi
+    \item Objek langsung siap digunakan setelah dibuat
+    \item Mencegah penggunaan objek dengan state yang tidak valid
+\end{itemize}
+
+\item \textbf{Consistency (Konsistensi)}
+\begin{itemize}
+    \item Semua objek Calculator dimulai dengan state yang sama
+    \item Tidak ada kemungkinan lupa menginisialisasi variabel
+    \item Perilaku kalkulator predictable dan konsisten
+\end{itemize}
+
+\item \textbf{Centralized Initialization}
+\begin{itemize}
+    \item Semua logika inisialisasi terpusat di satu tempat
+    \item Mudah dimodifikasi jika ada perubahan state awal
+    \item Code reuse dengan memanggil \texttt{reset()}
+\end{itemize}
+\end{enumerate}
+
+\begin{examplebox}[Cara Kerja]
+\begin{lstlisting}
+// Di main function
+Calculator calc;  // Constructor dipanggil otomatis
+
+// Yang terjadi di balik layar:
+// 1. Memory dialokasikan untuk object calc
+// 2. Calculator() constructor dipanggil
+// 3. reset() method dipanggil
+// 4. Semua member variables diinisialisasi
+// 5. Object siap digunakan
+\end{lstlisting}
+\end{examplebox}
+
+\subsubsection {Mengapa memanggil reset() dari constructor?}
+
+\begin{lstlisting}
+Calculator() {
+    reset();  // Code reuse!
+}
+
+void reset() {
+    currentValue = 0.0;
+    inputLength = digitCount = 0;
+    hasDot = hasInput = errorState = false;
+    lastOperator = 0;
+}
+\end{lstlisting}
+
+\subsubsection {Keuntungan pendekatan ini:}
+\begin{itemize}
+    \item \textbf{DRY Principle (Don't Repeat Yourself)}: Logika reset hanya ditulis sekali
+    \item \textbf{Maintainability}: Jika perlu tambah variabel baru, cukup update \texttt{reset()}
+    \item \textbf{Consistency}: Constructor dan reset button menggunakan logika yang sama
+\end{itemize}
+
+\section{Public Methods (Interface Publik)}
+
+\subsection{Method reset()}
+
+\begin{lstlisting}
+void reset() {
+    currentValue = 0.0;
+    inputLength = digitCount = 0;
+    hasDot = hasInput = errorState = false;
+    lastOperator = 0;
+}
+\end{lstlisting}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Mengembalikan kalkulator ke state awal seperti baru dinyalakan
+    \item Menghapus semua data dan state yang tersimpan
+    \item Dipanggil saat user menekan tombol 'C' (Clear)
+\end{itemize}
+
+\subsubsection{Cara Kerja}
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{currentValue = 0.0}
+\begin{itemize}
+    \item Reset nilai akumulator ke nol
+    \item Hasil perhitungan sebelumnya dihapus
+    \item Siap menerima nilai baru
+\end{itemize}
+
+\item \textbf{inputLength = digitCount = 0}
+\begin{itemize}
+    \item Multiple assignment: kedua variabel di-set 0 bersamaan
+    \item inputLength = 0: buffer input kosong
+    \item digitCount = 0: belum ada digit yang diinput
+    \item currentInput tidak perlu di-clear karena inputLength = 0 sudah menandakan buffer kosong
+\end{itemize}
+
+\item \textbf{hasDot = hasInput = errorState = false}
+\begin{itemize}
+    \item Multiple assignment untuk bool variables
+    \item hasDot = false: belum ada titik desimal
+    \item hasInput = false: belum ada input dari user
+    \item errorState = false: clear error jika ada
+\end{itemize}
+
+\item \textbf{lastOperator = 0}
+\begin{itemize}
+    \item Reset operator pending
+    \item 0 (null character) menandakan tidak ada operasi tertunda
+    \item Siap menerima operasi baru
+\end{itemize}
+\end{enumerate}
+
+\textbf{Mengapa method ini public?}
+\begin{itemize}
+    \item User perlu bisa mereset kalkulator kapan saja
+    \item Dipanggil dari \texttt{processButton()} saat tombol 'C' ditekan
+    \item Dipanggil dari constructor untuk inisialisasi
+\end{itemize}
+
+\begin{examplebox}[Contoh Penggunaan]
+\begin{lstlisting}
+Calculator calc;
+calc.processButton('5');  // Input 5
+calc.processButton('+');  // Operator +
+calc.processButton('3');  // Input 3
+calc.processButton('C');  // Clear! → reset() dipanggil
+// Kalkulator kembali ke state awal
+\end{lstlisting}
+\end{examplebox}
+
+\subsection{Method processButton()}
+
+\begin{lstlisting}
+void processButton(char button) {
+    if (errorState && button != 'C') {
+        return;
+    }
+    
+    if (button == 'C') {
+        reset();
+    } else if (button == '.' || 
+               (button >= '0' && button <= '9')) {
+        digitorDot(button);
+    } else {
+        operators(button);
+    }
+}
+\end{lstlisting}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Main interface untuk berinteraksi dengan kalkulator
+    \item Menerima satu karakter input (tombol yang ditekan)
+    \item Mendelegasikan ke method private yang sesuai
+    \item Implements pattern: \textbf{Command Pattern}
+\end{itemize}
+
+\subsubsection{Cara Kerja}
+
+\paragraph{1. Error State Handling}\mbox{}\\[0.5em]
+
+\begin{lstlisting}
+if (errorState && button != 'C') {
+    return;
+}
+\end{lstlisting}
+
+\textbf{Mengapa ini penting?}
+\begin{itemize}
+    \item Saat kalkulator error (misal division by zero), semua operasi kecuali 'C' diblokir
+    \item Mencegah error berantai
+    \item User harus clear error dulu sebelum lanjut
+    \item Sesuai behavior kalkulator fisik
+\end{itemize}
+
+\begin{examplebox}[Contoh]
+\begin{verbatim}
+User: 10 / 0 → Error!
+User: + 5    → Ditolak (errorState = true, button != 'C')
+User: C      → Diterima! reset() dipanggil
+User: 5 + 3  → Normal operation kembali
+\end{verbatim}
+\end{examplebox}
+
+\paragraph{2. Clear Button Handling}\mbox{}\\[0.5em]
+
+\begin{lstlisting}
+if (button == 'C') {
+    reset();
+}
+\end{lstlisting}
+
+\textbf{Mengapa terpisah?}
+\begin{itemize}
+    \item 'C' adalah operasi special yang harus bekerja bahkan saat error
+    \item Priority tertinggi: selalu di-check pertama
+    \item Langsung memanggil \texttt{reset()} tanpa proses tambahan
+\end{itemize}
+
+\paragraph{3. Digit and Dot Handling}\mbox{}\\[0.5em]
+
+\begin{lstlisting}
+else if (button == '.' || (button >= '0' && button <= '9')) {
+    digitorDot(button);
+}
+\end{lstlisting}
+
+\textbf{Validasi Input:}
+\begin{itemize}
+    \item \texttt{button == '.'}: Check apakah titik desimal
+    \item \texttt{(button >= '0' \&\& button <= '9')}: Check apakah digit 0-9
+    \item Menggunakan ASCII comparison untuk efisiensi
+    \item Delegate ke \texttt{digitorDot()} untuk logic detail
+\end{itemize}
+
+\begin{notebox}[Mengapa menggunakan ASCII comparison?]
+\begin{lstlisting}
+// Ini sangat efisien:
+button >= '0' && button <= '9'
+
+// Alternatif yang lebih lambat:
+isdigit(button)  // Function call overhead
+\end{lstlisting}
+\end{notebox}
+
+\paragraph{4. Operator Handling}\mbox{}\\[0.5em]
+
+\begin{lstlisting}
+else {
+    operators(button);
+}
+\end{lstlisting}
+
+\textbf{Asumsi:}
+\begin{itemize}
+    \item Jika bukan 'C', bukan '.', bukan digit $\rightarrow$ pasti operator
+    \item Operator yang valid: '+', '-', 'x', ':', '='
+    \item Delegate ke \texttt{operators()} method
+\end{itemize}
+
+\subsubsection{Design Pattern: Command Pattern}
+
+\begin{lstlisting}
+processButton() bertindak sebagai dispatcher:
++-----------------+
+| processButton() |
++--------+--------+
+         |
+     +---+-------+-----------+----------+
+     |           |           |          |
+  +--+--+  +-----+----+ +----+----+ +---+---+
+  |reset|  |digitorDot| |operators| | error |
+  +-----+  +----------+ +---------+ +-------+
+\end{lstlisting}
+
+\textbf{Keuntungan Design Ini:}
+\begin{enumerate}
+    \item \textbf{Single Responsibility}: Setiap method punya tugas spesifik
+    \item \textbf{Easy to Extend}: Tambah button baru tinggal tambah if statement
+    \item \textbf{Testability}: Setiap method bisa ditest terpisah
+    \item \textbf{Readability}: Logic clear dan terstruktur
+\end{enumerate}
+
+\subsection{Method getResult()}
+
+\begin{lstlisting}
+void getResult(char *output) {
+    if (errorState)
+        sprintf(output, "%10s", "Error.");
+    else
+        formatOutput(currentValue, output);
+}
+\end{lstlisting}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Mengambil nilai current dari kalkulator dan format untuk display
+    \item Handle error state
+    \item Delegate formatting ke \texttt{formatOutput()}
+\end{itemize}
+
+\textbf{Parameter:}
+\begin{itemize}
+    \item \texttt{char *output}: Pointer ke buffer yang akan diisi hasil
+    \item Buffer harus sudah dialokasi minimal 11 karakter (10 + null terminator)
+\end{itemize}
+
+\subsubsection{Cara Kerja}
+
+\paragraph{1. Error State Check}\mbox{}\\[0.5em]
+
+\begin{lstlisting}
+if (errorState)
+    sprintf(output, "%10s", "Error.");
+\end{lstlisting}
+
+\textbf{Detail sprintf():}
+\begin{itemize}
+    \item \texttt{\%10s}: Format string dengan lebar 10 karakter, right-aligned
+    \item \texttt{"Error."}: String yang akan diformat
+    \item Hasil: \texttt{"    Error."} (6 spasi + "Error.")
+\end{itemize}
+
+\textbf{Mengapa 10 karakter?}
+\begin{itemize}
+    \item Sesuai dengan spesifikasi display kalkulator
+    \item Konsisten dengan format output angka
+    \item Right-aligned untuk alignment dengan angka
+\end{itemize}
+
+\paragraph{2. Normal Output Formatting}\mbox{}\\[0.5em]
+
+\begin{lstlisting}
+else
+    formatOutput(currentValue, output);
+\end{lstlisting}
+
+\textbf{Delegation:}
+\begin{itemize}
+    \item Jika tidak error, delegate ke \texttt{formatOutput()}
+    \item \texttt{formatOutput()} handle complex logic formatting angka
+    \item Separation of concerns: \texttt{getResult()} hanya decide error atau normal
+\end{itemize}
+
+\subsubsection{Mengapa menggunakan pointer untuk output?}
+
+\begin{lstlisting}
+// Alternatif 1: Return string (kurang efisien)
+char* getResult() {
+    static char output[16];
+    // ... format output
+    return output;
+}
+
+// Alternatif 2: Return by pointer (yang dipakai)
+void getResult(char *output) {
+    // ... format output directly ke buffer caller
+}
+\end{lstlisting}
+
+\textbf{Keuntungan pointer approach:}
+\begin{enumerate}
+    \item \textbf{No Memory Allocation}: Caller menyediakan buffer
+    \item \textbf{No Static Variable}: Lebih thread-safe
+    \item \textbf{Efficient}: Tidak ada copying string
+    \item \textbf{Flexible}: Caller kontrol lifetime buffer
+\end{enumerate}
+
+\begin{examplebox}[Contoh Penggunaan]
+\begin{lstlisting}
+Calculator calc;
+calc.processButton('1');
+calc.processButton('2');
+calc.processButton('3');
+
+char output[16];
+calc.getResult(output);  
+// output sekarang berisi "      123."
+printf("%s\n", output);
+\end{lstlisting}
+\end{examplebox}
+
+\section{Private Methods (Helper Functions)}
+
+\subsection{Method operation()}
+
+\begin{lstlisting}
+private:
+    double operation(char op, double a, double b) {
+        double result;
+        switch (op) {
+            case '+': result = a + b; break;
+            case '-': result = a - b; break;
+            case 'x': result = a * b; break;
+            case ':':
+                if (b == 0.0) {
+                    errorState = true;
+                    return 0.0;
+                }
+                result = a / b;
+                break;
+            default: return a;
+        }
+        if (fabs(result) >= 1e100) {
+            errorState = true;
+            return 0.0;
+        }
+        return result;
+    }
+\end{lstlisting}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Melakukan operasi matematika antara dua angka
+    \item Handle special cases seperti division by zero dan overflow
+    \item Return hasil operasi atau 0.0 jika error
+\end{itemize}
+
+\textbf{Mengapa method ini private?}
+\begin{itemize}
+    \item Internal implementation detail
+    \item User tidak perlu (dan tidak boleh) memanggil langsung
+    \item Hanya dipanggil dari \texttt{operators()} method
+    \item Encapsulation: hide complexity dari user
+\end{itemize}
+
+\textbf{Parameter:}
+\begin{itemize}
+    \item \texttt{char op}: Operator yang akan digunakan (+, -, x, :)
+    \item \texttt{double a}: Operand pertama (nilai sebelumnya)
+    \item \texttt{double b}: Operand kedua (nilai yang baru diinput)
+\end{itemize}
+
+\subsubsection{Cara Kerja}
+
+\paragraph{1. Switch Statement untuk Operator}
+
+\textbf{Mengapa menggunakan switch instead of if-else?}
+
+Switch advantages:
+\begin{itemize}
+    \item Lebih readable untuk multiple conditions
+    \item Compiler bisa optimize menjadi jump table
+    \item Lebih cepat untuk banyak case
+    \item Intent lebih jelas: mapping operator ke operasi
+\end{itemize}
+
+\paragraph{Case '+': (Addition)}\mbox{}\\[0.5em]
+\begin{lstlisting}
+case '+': result = a + b; break;
+\end{lstlisting}
+\begin{itemize}
+    \item Straightforward addition
+    \item Contoh: 5 + 3 = 8
+    \item No special handling needed
+\end{itemize}
+
+\paragraph{Case '-': (Subtraction)}\mbox{}\\[0.5em]
+\begin{lstlisting}
+case '-': result = a - b; break;
+\end{lstlisting}
+\begin{itemize}
+    \item Simple subtraction
+    \item Contoh: 10 - 4 = 6
+    \item Order matters: $a - b \neq b - a$
+\end{itemize}
+
+\paragraph{Case 'x': (Multiplication)}\mbox{}\\[0.5em]
+\begin{lstlisting}
+case 'x': result = a * b; break;
+\end{lstlisting}
+\begin{itemize}
+    \item Menggunakan 'x' bukan '*' untuk represent multiply
+    \item Contoh: $7 \times 8 = 56$
+    \item Sesuai dengan simbol kalkulator fisik
+\end{itemize}
+
+\paragraph{Case ':': (Division - Special Handling)}\mbox{}\\[0.5em]
+\begin{lstlisting}
+case ':':
+    if (b == 0.0) {
+        errorState = true;
+        return 0.0;
+    }
+    result = a / b;
+    break;
+\end{lstlisting}
+
+\textbf{Mengapa division perlu special handling?}
+
+\begin{enumerate}
+\item \textbf{Division by Zero adalah Undefined}
+\begin{itemize}
+    \item Secara matematika, $x/0$ tidak terdefinisi
+    \item Komputer tidak bisa menghitung ini
+    \item Harus ditangani secara explicit
+\end{itemize}
+
+\item \textbf{Check b == 0.0}
+\begin{itemize}
+    \item Menggunakan exact comparison dengan 0.0
+    \item Untuk double, ini safe karena 0.0 punya representasi exact
+    \item Alternatif: \texttt{fabs(b) < 1e-10} (tapi overkill untuk kasus ini)
+\end{itemize}
+
+\item \textbf{Set errorState = true}
+\begin{itemize}
+    \item Flag error untuk mencegah operasi selanjutnya
+    \item User harus clear kalkulator untuk lanjut
+    \item Konsisten dengan behavior kalkulator fisik
+\end{itemize}
+
+\item \textbf{Return 0.0}
+\begin{itemize}
+    \item Tidak masalah return value apa karena errorState = true
+    \item 0.0 dipilih sebagai safe default value
+    \item \texttt{getResult()} akan menampilkan "Error." bukan angka ini
+\end{itemize}
+\end{enumerate}
+
+\begin{examplebox}[Trace Division by Zero]
+\begin{verbatim}
+User: 10 / 0 =
+
+Step 1: operators('=') dipanggil
+Step 2: operation(':', 10, 0) dipanggil
+Step 3: Check b == 0.0 → true!
+Step 4: errorState = true
+Step 5: return 0.0
+Step 6: currentValue = 0.0 (tidak penting)
+Step 7: getResult() → "Error."
+\end{verbatim}
+\end{examplebox}
+
+\paragraph{Case 'default': (Fallback)}\mbox{}\\[0.5em]
+\begin{lstlisting}
+default: return a;
+\end{lstlisting}
+
+\textbf{Mengapa return a?}
+\begin{itemize}
+    \item Jika operator tidak recognized, return nilai pertama
+    \item Safe fallback: tidak crash, tidak corrupt data
+    \item Defensive programming: handle unexpected input gracefully
+\end{itemize}
+
+\paragraph{2. Overflow Detection}\mbox{}\\[0.5em]
+
+\begin{lstlisting}
+if (fabs(result) >= 1e100) {
+    errorState = true;
+    return 0.0;
+}
+\end{lstlisting}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Deteksi jika hasil terlalu besar untuk ditampilkan
+    \item $1e100 = 10^{100}$ (angka sangat besar)
+\end{itemize}
+
+\textbf{Mengapa 1e100?}
+\begin{itemize}
+    \item Display kalkulator terbatas (10 karakter)
+    \item Angka $> 10^{100}$ tidak bisa diformat dengan baik
+    \item Scientific notation juga punya limit
+    \item Konsisten dengan spesifikasi kalkulator
+\end{itemize}
+
+\textbf{Mengapa menggunakan fabs()?}
+\begin{itemize}
+    \item Check magnitude tanpa peduli sign (+ atau -)
+    \item $-1e100$ sama bermasalahnya dengan $+1e100$
+    \item \texttt{fabs()} dari \texttt{<cmath>} untuk floating point
+\end{itemize}
+
+\begin{examplebox}[Contoh Overflow]
+\begin{lstlisting}
+Input: 1e50 * 1e50
+Result: 1e100
+fabs(1e100) ≥ 1e100 -> true
+errorState = true
+Return: 0.0
+Display: "Error."
+\end{lstlisting}
+\end{examplebox}
+
+\subsection{Method formatOutput() - Overview}
+
+\begin{lstlisting}
+void formatOutput(double x, char *output) {
+    if (fabs(x) <= 1e-100) {
+        sprintf(output, "%10s", "0.");
+        return;
+    }
+    if (fabs(x) >= 1e100) {
+        sprintf(output, "%10s", "Error.");
+        return;
+    }
+    
+    double abs_x = fabs(x);
+    bool negative = (x < 0);
+    
+    // ... complex formatting logic
+}
+\end{lstlisting}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Format angka double menjadi string untuk display
+    \item Handle special cases: very small, very large, negative numbers
+    \item Implement scientific notation untuk angka ekstrem
+    \item Ensure output selalu 10 karakter dengan format yang tepat
+\end{itemize}
+
+\textbf{Mengapa method ini complex?}
+\begin{itemize}
+    \item Kalkulator punya constraint display: hanya 10 karakter
+    \item Harus handle berbagai range angka: dari 0.00000001 sampai 99999999
+    \item Harus remove trailing zeros tapi keep desimal point
+    \item Scientific notation untuk angka di luar range
+\end{itemize}
+
+\subsubsection{Handle Special Case: Very Small Numbers}
+
+\begin{lstlisting}
+if (fabs(x) <= 1e-100) {
+    sprintf(output, "%10s", "0.");
+    return;
+}
+\end{lstlisting}
+
+\textbf{Mengapa $1e-100$?}
+\begin{itemize}
+    \item Angka lebih kecil dari $10^{-100}$ dianggap effectively zero
+    \item Terlalu kecil untuk meaningful calculation
+    \item Avoid underflow issues
+\end{itemize}
+
+\textbf{Format "0.":}
+\begin{itemize}
+    \item Konsisten dengan format kalkulator
+    \item Trailing dot menunjukkan ini angka desimal
+    \item Right-aligned dalam 10 karakter: \texttt{"        0."}
+\end{itemize}
+
+\subsubsection{Handle Special Case: Very Large Numbers}
+
+\begin{lstlisting}
+if (fabs(x) >= 1e100) {
+    sprintf(output, "%10s", "Error.");
+    return;
+}
+\end{lstlisting}
+
+\textbf{Consistent dengan operation() overflow check}
+\begin{itemize}
+    \item Jika somehow angka lolos dari operation(), catch di sini
+    \item Double defense mechanism
+    \item Display "Error." untuk angka tidak bisa diformat
+\end{itemize}
+
+\subsubsection{Prepare Variables}
+
+\begin{lstlisting}
+double abs_x = fabs(x);
+bool negative = (x < 0);
+\end{lstlisting}
+
+\textbf{Mengapa pisahkan sign dari magnitude?}
+\begin{itemize}
+    \item Simplify formatting logic
+    \item Work dengan absolute value
+    \item Add sign di akhir jika perlu
+    \item Cleaner code organization
+\end{itemize}
+
+\subsubsection{Scientific Notation untuk Extreme Values}
+
+\begin{lstlisting}
+if (round(abs_x) >= 1e8 || 
+    (abs_x < 5e-8 && abs_x > 1e-100)) {
+    // Scientific notation formatting
+}
+\end{lstlisting}
+
+\textbf{Condition Breakdown:}
+
+\begin{itemize}
+\item \textbf{Condition 1:} \texttt{round(abs\_x) >= 1e8}
+\begin{itemize}
+    \item Angka $\geq 100,000,000$ (8 digit atau lebih)
+    \item Terlalu besar untuk fixed notation dalam 10 karakter
+    \item Contoh: 123456789 tidak bisa fit tanpa scientific notation
+\end{itemize}
+
+\item \textbf{Condition 2:} \texttt{abs\_x < 5e-8 \&\& abs\_x > 1e-100}
+\begin{itemize}
+    \item Angka sangat kecil: antara 0.00000005 dan $10^{-100}$
+    \item Terlalu banyak leading zeros
+    \item Contoh: 0.000000012 lebih baik jadi 1.2 -08
+\end{itemize}
+\end{itemize}
+
+\begin{examplebox}[Scientific Notation Format]
+\begin{lstlisting}
+Examples:
+123456789 → "1.2346 08"   (1.2346 × 10⁸)
+0.00000123 → "1.23 -06"   (1.23 × 10⁻⁶)
+\end{lstlisting}
+\end{examplebox}
+
+\subsubsection{Calculate Exponent}
+
+\begin{lstlisting}
+int exp = (int)floor(log10(abs_x));
+\end{lstlisting}
+
+\begin{examplebox}[Cara kerja log10()]
+\begin{lstlisting}
+abs_x = 1234.5
+log10(1234.5) = 3.091...
+floor(3.091) = 3
+→ 1234.5 = 1.2345 × 10³
+
+abs_x = 0.00123
+log10(0.00123) = -2.91...
+floor(-2.91) = -3
+→ 0.00123 = 1.23 × 10⁻³
+\end{lstlisting}
+\end{examplebox}
+
+\textbf{Mengapa floor()?}
+\begin{itemize}
+    \item Exponent harus integer
+    \item floor() rounds down (penting untuk negative exponents)
+    \item Contoh: $\log_{10}(0.5) = -0.301 \rightarrow$ floor $= -1$ (bukan 0)
+\end{itemize}
+
+\subsubsection{Normalize Mantissa}
+
+\begin{lstlisting}
+double rounding = abs_x / pow(10.0, exp);
+rounding = round(rounding * 10000.0) / 10000.0;
+\end{lstlisting}
+
+\textbf{Step 1: Normalize ke range (1, 10)}
+\begin{lstlisting}
+rounding = abs_x / pow(10.0, exp);
+// Contoh: 1234.5 / 10³ = 1.2345
+\end{lstlisting}
+
+\textbf{Step 2: Round ke 4 desimal}
+\begin{lstlisting}
+rounding = round(rounding * 10000.0) / 10000.0;
+\end{lstlisting}
+
+\textbf{Mengapa 4 desimal?}
+\begin{itemize}
+    \item Scientific notation format: "X.XXXX±EE"
+    \item Total 10 karakter termasuk sign dan exponent
+    \item 4 desimal memberikan precision yang cukup
+\end{itemize}
+
+\begin{examplebox}[Cara kerja rounding]
+\begin{verbatim}
+rounding = 1.23456
+rounding × 10000 = 12345.6
+round(12345.6) = 12346.0
+12346.0 / 10000 = 1.2346
+\end{verbatim}
+\end{examplebox}
+
+\subsubsection{Handle Mantissa $\geq$ 10}
+
+\begin{lstlisting}
+if (rounding >= 10.0) {
+    rounding /= 10.0;
+    exp++;
+}
+\end{lstlisting}
+
+\textbf{Mengapa ini bisa terjadi?}
+\begin{itemize}
+    \item Rounding bisa menyebabkan mantissa jadi 10.0
+    \item Contoh: 9.9999 rounded menjadi 10.0
+\end{itemize}
+
+\textbf{Normalisasi:}
+\begin{lstlisting}
+Sebelum: 10.0 × 10³
+Setelah: 1.0 × 10⁴
+\end{lstlisting}
+
+\subsubsection{Format Mantissa String}
+
+\begin{lstlisting}
+char temp[20];
+sprintf(temp, "%.4f", rounding);
+\end{lstlisting}
+
+\textbf{Format \%.4f:}
+\begin{itemize}
+    \item Print dengan exactly 4 desimal
+    \item Contoh: 1.2346000... $\rightarrow$ "1.2346"
+\end{itemize}
+
+\subsubsection{Remove Trailing Zeros}
+
+\begin{lstlisting}
+size_t len = strlen(temp);
+size_t dot = 0;
+for (size_t j = 0; j < len; j++) {
+    if (temp[j] == '.') {
+        dot = j;
+        break;
+    }
+}
+
+if (dot > 0) {
+    size_t lastNum = len - 1;
+    while (lastNum > dot && temp[lastNum] == '0') {
+        lastNum--;
+    }
+    temp[lastNum + 1] = '\0';
+}
+\end{lstlisting}
+
+\begin{examplebox}[Contoh trace]
+\begin{verbatim}
+Input:  temp = "1.2340"
+        len = 6, dot = 1
+
+lastNum = 5 (karakter '0')
+Check: lastNum > dot && temp[5] == '0' → true
+  lastNum = 4
+
+Check: lastNum > dot && temp[4] == '4' → false
+  Stop
+
+temp[5] = '\0'
+Result: "1.234"
+\end{verbatim}
+\end{examplebox}
+
+\textbf{Mengapa tidak remove decimal point?}
+\begin{itemize}
+    \item Condition \texttt{lastNum > dot} ensure kita tidak hapus decimal point
+    \item Jika hasil "1.0", akan jadi "1." (keep dot)
+\end{itemize}
+
+\subsubsection{Format Exponent}
+
+\begin{lstlisting}
+char expSign = (exp >= 0) ? ' ' : '-';
+int expVal = (exp >= 0) ? exp : -exp;
+\end{lstlisting}
+
+\textbf{Exponent Formatting:}
+\begin{itemize}
+    \item Positive exponent: space ' ' as prefix
+    \item Negative exponent: minus '-' as prefix
+    \item Always 2 digits: leading zero jika perlu
+\end{itemize}
+
+\begin{examplebox}[Contoh]
+\begin{verbatim}
+exp = 8   → expSign = ' ', expVal = 8  → " 08"
+exp = -6  → expSign = '-', expVal = 6  → "-06"
+\end{verbatim}
+\end{examplebox}
+
+\subsubsection{Combine Mantissa and Exponent}
+
+\begin{lstlisting}
+char result[20];
+if (negative)
+    sprintf(result, "-%s%c%02d", temp, expSign, expVal);
+else
+    sprintf(result, "%s%c%02d", temp, expSign, expVal);
+
+sprintf(output, "%10s", result);
+\end{lstlisting}
+
+\textbf{Format String Breakdown:}
+\begin{itemize}
+    \item \texttt{\%s}: Mantissa string (e.g., "1.234")
+    \item \texttt{\%c}: Exponent sign (' ' or '-')
+    \item \texttt{\%02d}: Exponent value, 2 digits, zero-padded
+\end{itemize}
+
+\begin{examplebox}[Examples]
+\begin{lstlisting}
+Positive, large: "1.234 08"   (1.234 × 10⁸)
+Negative, large: "-1.234 08"  (-1.234 × 10⁸)
+Positive, small: "1.234-06"   (1.234 × 10⁻⁶)
+Negative, small: "-1.234-06"  (-1.234 × 10⁻⁶)
+\end{lstlisting}
+\end{examplebox}
+
+\textbf{Final sprintf:}
+\begin{lstlisting}
+sprintf(output, "%10s", result);
+\end{lstlisting}
+\begin{itemize}
+    \item Right-align dalam 10 karakter
+    \item Add leading spaces jika perlu
+\end{itemize}
+
+\subsection{Fixed-Point Formatting (Else Branch)}
+
+\begin{lstlisting}
+else {
+    int numInit = (abs_x < 1.0) ? 1 : 
+                  (int)floor(log10(abs_x)) + 1;
+    int numDecimal = 8 - numInit;
+    if (numDecimal < 0) numDecimal = 0;
+    
+    // ... formatting code
+}
+\end{lstlisting}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Format angka dalam fixed-point notation (bukan scientific)
+    \item Calculate berapa digit sebelum dan sesudah decimal point
+    \item Maksimal 8 digit signifikan total
+\end{itemize}
+
+\subsubsection{Calculate Integer Digits}
+
+\begin{lstlisting}
+int numInit = (abs_x < 1.0) ? 1 : 
+              (int)floor(log10(abs_x)) + 1;
+\end{lstlisting}
+
+\textbf{Untuk angka < 1.0:}
+\begin{verbatim}
+abs_x = 0.123
+numInit = 1  (satu digit: "0")
+\end{verbatim}
+\begin{itemize}
+    \item Leading "0" before decimal point
+    \item Counted as 1 digit
+\end{itemize}
+
+\textbf{Untuk angka $\geq$ 1.0:}
+\begin{verbatim}
+abs_x = 1234.5
+log10(1234.5) = 3.091
+floor(3.091) + 1 = 4
+numInit = 4  (empat digit: "1234")
+\end{verbatim}
+
+\textbf{Mengapa +1?}
+\begin{itemize}
+    \item $\log_{10}(10) = 1$, tapi "10" punya 2 digit
+    \item $\log_{10}(100) = 2$, tapi "100" punya 3 digit
+    \item Formula: digits = $\lfloor \log_{10}(x) \rfloor + 1$
+\end{itemize}
+
+\subsubsection{Calculate Decimal Digits}
+
+\begin{lstlisting}
+int numDecimal = 8 - numInit;
+if (numDecimal < 0) numDecimal = 0;
+\end{lstlisting}
+
+\textbf{8 Digit Limit:}
+\begin{itemize}
+    \item Total significant digits = 8
+    \item Jika 4 digit integer, maka 4 digit decimal
+    \item Jika 8 digit integer, maka 0 digit decimal
+\end{itemize}
+
+\begin{examplebox}[Examples]
+\begin{verbatim}
+123.45678    → numInit=3, numDecimal=5 
+             → "123.45678"
+12345678.9   → numInit=8, numDecimal=0 
+             → "12345678."
+0.123456789  → numInit=1, numDecimal=7 
+             → "0.1234568" (rounded)
+\end{verbatim}
+\end{examplebox}
+
+\subsubsection{Format dengan sprintf}
+
+\begin{lstlisting}
+char temp[20];
+sprintf(temp, "%.*f", numDecimal, abs_x);
+\end{lstlisting}
+
+\textbf{Format \%.*f:}
+\begin{itemize}
+    \item \texttt{*}: Precision dari parameter (numDecimal)
+    \item \texttt{f}: Fixed-point format
+    \item Dynamic precision based on number size
+\end{itemize}
+
+\begin{examplebox}[Examples]
+\begin{verbatim}
+sprintf(temp, "%.5f", 123.456789) → "123.45679"
+sprintf(temp, "%.2f", 123.456789) → "123.46"
+sprintf(temp, "%.0f", 123.456789) → "123"
+\end{verbatim}
+\end{examplebox}
+
+\subsubsection{Remove Trailing Zeros}
+
+\begin{lstlisting}
+size_t len = strlen(temp);
+size_t dot = 0;
+for (size_t j = 0; j < len; j++) {
+    if (temp[j] == '.') {
+        dot = j;
+        break;
+    }
+}
+
+if (dot > 0) {
+    size_t lastNum = len - 1;
+    while (lastNum > dot && temp[lastNum] == '0')
+        lastNum--;
+    temp[lastNum + 1] = '\0';
+} else {
+    strcat(temp, ".");
+}
+\end{lstlisting}
+
+\textbf{Addition: Add Decimal Point if Missing}
+
+\textbf{Mengapa add trailing dot?}
+\begin{itemize}
+    \item Jika numDecimal = 0, sprintf tidak include '.'
+    \item Contoh: "12345678" $\rightarrow$ "12345678."
+    \item Konsisten dengan format kalkulator
+\end{itemize}
+
+\subsubsection{Add Sign and Format Final Output}
+
+\begin{lstlisting}
+char result[20];
+if (negative)
+    sprintf(result, "-%s", temp);
+else
+    strcpy(result, temp);
+
+sprintf(output, "%10s", result);
+\end{lstlisting}
+
+\textbf{Add Negative Sign:}
+\begin{itemize}
+    \item Prepend '-' jika angka negative
+    \item Simple string concatenation
+\end{itemize}
+
+\textbf{Final Formatting:}
+\begin{itemize}
+    \item Right-align dalam 10 karakter
+    \item Consistent dengan semua output format
+\end{itemize}
+
+\begin{examplebox}[Complete Example Trace]
+\begin{verbatim}
+Input: x = -123.45
+
+Step 1: abs_x = 123.45, negative = true
+Step 2: Not extreme → use fixed-point
+Step 3: numInit = floor(log10(123.45)) + 1 = 3
+Step 4: numDecimal = 8 - 3 = 5
+Step 5: sprintf(temp, "%.5f", 123.45) 
+        → "123.45000"
+Step 6: Remove trailing zeros → "123.45"
+Step 7: temp already has '.'
+Step 8: sprintf(result, "-%s", "123.45") 
+        → "-123.45"
+Step 9: sprintf(output, "%10s", "-123.45") 
+        → "   -123.45"
+\end{verbatim}
+\end{examplebox}
+
+\subsection{Method digitorDot()}
+
+\begin{lstlisting}
+void digitorDot(char c) {
+    if (c == '.') {
+        if (!hasInput) {
+            currentInput[0] = '0';
+            currentInput[1] = '.';
+            inputLength = 2;
+            digitCount = 1;
+            hasDot = hasInput = true;
+        } else if (!hasDot) {
+            currentInput[inputLength++] = '.';
+            hasDot = true;
+        }
+    } else if (c == '0') {
+        // ... handle zero
+    } else {
+        // ... handle other digits
+    }
+}
+\end{lstlisting}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Handle input digit (0-9) dan decimal point ('.')
+    \item Implement berbagai aturan input kalkulator
+    \item Maintain state variables (inputLength, digitCount, hasDot, hasInput)
+\end{itemize}
+
+\textbf{Mengapa method ini private?}
+\begin{itemize}
+    \item Internal logic untuk building input string
+    \item Called only dari \texttt{processButton()}
+    \item User tidak perlu tau detail implementasi
+\end{itemize}
+
+\subsubsection{Handle Decimal Point ('.')}
+
+\paragraph{Case 1: First Input is Decimal Point}\mbox{}\\[0.5em]
+
+\begin{lstlisting}
+if (!hasInput) {
+    currentInput[0] = '0';
+    currentInput[1] = '.';
+    inputLength = 2;
+    digitCount = 1;
+    hasDot = hasInput = true;
+}
+\end{lstlisting}
+
+\begin{examplebox}[Behavior]
+\begin{verbatim}
+User tekan '.' sebagai input pertama
+→ currentInput = "0."
+→ Tidak hanya "."
+\end{verbatim}
+\end{examplebox}
+
+\textbf{Mengapa prepend '0'?}
+\begin{itemize}
+    \item ".5" kurang jelas, "0.5" lebih readable
+    \item Consistent dengan kalkulator fisik
+    \item Mathematical convention
+\end{itemize}
+
+\textbf{Update State:}
+\begin{itemize}
+    \item \texttt{inputLength = 2}: Dua karakter ('0' dan '.')
+    \item \texttt{digitCount = 1}: '0' dihitung sebagai digit
+    \item \texttt{hasDot = true}: Sudah ada decimal point
+    \item \texttt{hasInput = true}: Sudah mulai input
+\end{itemize}
+
+\paragraph{Case 2: Add Decimal Point to Existing Input}\mbox{}\\[0.5em]
+
+\begin{lstlisting}
+else if (!hasDot) {
+    currentInput[inputLength++] = '.';
+    hasDot = true;
+}
+\end{lstlisting}
+
+\begin{examplebox}[Behavior]
+\begin{verbatim}
+currentInput = "123"
+User tekan '.'
+→ currentInput = "123."
+\end{verbatim}
+\end{examplebox}
+
+\textbf{Safety Check \texttt{!hasDot}:}
+\begin{itemize}
+    \item Prevent double decimal point
+    \item "123.45." adalah invalid
+    \item Only allow one '.' per number
+\end{itemize}
+
+\subsubsection{Handle Zero Digit ('0')}
+
+\paragraph{Case 1: First Input is Zero}\mbox{}\\[0.5em]
+
+\begin{lstlisting}
+if (!hasInput) {
+    currentInput[0] = '0';
+    inputLength = digitCount = 1;
+    hasInput = true;
+}
+\end{lstlisting}
+
+\begin{examplebox}[Behavior]
+\begin{verbatim}
+User tekan '0' pertama kali
+→ currentInput = "0"
+→ Display: "0"
+\end{verbatim}
+\end{examplebox}
+
+\paragraph{Case 2: Add Zero to Existing Input}\mbox{}\\[0.5em]
+
+\begin{lstlisting}
+else if (!(inputLength == 1 && currentInput[0] == '0' 
+         && !hasDot) && digitCount < 8) {
+    currentInput[inputLength++] = c;
+    digitCount++;
+}
+\end{lstlisting}
+
+\textbf{Complex Condition Breakdown:}
+\begin{lstlisting}
+!(inputLength == 1 && currentInput[0] == '0' && !hasDot)
+\end{lstlisting}
+
+\textbf{Mengapa condition ini?}
+\begin{itemize}
+    \item Prevent leading zeros: "00123" invalid
+    \item Allow zeros after decimal: "0.00123" valid
+    \item Allow zeros in middle: "102" valid
+\end{itemize}
+
+\begin{examplebox}[Condition Analysis:]
+\begin{verbatim}
+inputLength == 1: Hanya satu karakter
+currentInput[0] == '0': Karakter itu adalah '0'
+!hasDot: Belum ada decimal point
+
+Jika semua true → Input adalah "0" tanpa decimal
+→ REJECT zero berikutnya (prevent "00")
+
+Negasi (!) berarti:
+→ ACCEPT zero jika bukan kondisi di atas
+\end{verbatim}
+\end{examplebox}
+
+\begin{examplebox}[Examples]
+\begin{verbatim}
+State: "0", hasDot=false
+User tekan '0'
+→ Condition true (reject)
+→ Stay "0"
+
+State: "0.", hasDot=true
+User tekan '0'
+→ Condition false (accept)
+→ Become "0.0"
+
+State: "12", hasDot=false
+User tekan '0'
+→ Condition false (accept)
+→ Become "120"
+\end{verbatim}
+\end{examplebox}
+
+\subsubsection{Handle Other Digits (1-9)}
+
+\paragraph{Case 1: First Input is Non-Zero Digit}\mbox{}\\[0.5em]
+
+\begin{lstlisting}
+if (!hasInput) {
+    currentInput[0] = c;
+    inputLength = digitCount = 1;
+    hasInput = true;
+}
+\end{lstlisting}
+
+\paragraph{Case 2: Replace Leading Zero}\mbox{}\\[0.5em]
+
+\begin{lstlisting}
+else if (inputLength == 1 && currentInput[0] == '0' 
+         && !hasDot) {
+    currentInput[0] = c;
+}
+\end{lstlisting}
+
+\begin{examplebox}[Behavior]
+\begin{verbatim}
+State: "0", hasDot=false
+User tekan '5'
+→ currentInput = "5" (replace, not append)
+\end{verbatim}
+\end{examplebox}
+
+\textbf{Mengapa replace instead of append?}
+\begin{itemize}
+    \item Prevent leading zeros: "05" invalid
+    \item User expectation: typing "5" after "0" should give "5", not "05"
+    \item Konsisten dengan kalkulator fisik
+\end{itemize}
+
+\paragraph{Case 3: Append Digit to Existing Input}\mbox{}\\[0.5em]
+
+\begin{lstlisting}
+else if (digitCount < 8) {
+    currentInput[inputLength++] = c;
+    digitCount++;
+}
+\end{lstlisting}
+
+\begin{examplebox}[Complete Example Trace]
+\begin{verbatim}
+Sequence: [.] [0] [5] [3]
+
+Step 1: c='.'
+  hasInput=false → Add "0."
+  Result: "0.", inputLength=2, digitCount=1
+
+Step 2: c='0'
+  Condition: !(false) → true
+  digitCount < 8 → true
+  Result: "0.0", inputLength=3, digitCount=2
+
+Step 3: c='5'
+  Append normally
+  Result: "0.05", inputLength=4, digitCount=3
+
+Step 4: c='3'
+  Append normally
+  Result: "0.053", inputLength=5, digitCount=4
+\end{verbatim}
+\end{examplebox}
+
+\subsection{Method operators()}
+
+\begin{lstlisting}
+void operators(char op) {
+    if (hasInput && inputLength > 0) {
+        currentInput[inputLength] = '\0';
+        double num = atof(currentInput);
+        
+        if (lastOperator != 0)
+            currentValue = operation(lastOperator, 
+                                    currentValue, num);
+        else
+            currentValue = num;
+        
+        inputLength = digitCount = 0;
+        hasDot = hasInput = false;
+    }
+    lastOperator = (op == '=') ? 0 : op;
+}
+\end{lstlisting}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Process operator input (+, -, x, :, =)
+    \item Execute pending operation jika ada
+    \item Prepare untuk input number berikutnya
+    \item Core logic untuk chaining operations
+\end{itemize}
+
+\subsubsection{1. Validate Input Exists}
+
+\begin{lstlisting}
+if (hasInput && inputLength > 0) {
+    // ... process input
+}
+\end{lstlisting}
+
+\textbf{Double Check Safety:}
+\begin{itemize}
+    \item \texttt{hasInput}: Flag bahwa user sudah mulai input
+    \item \texttt{inputLength > 0}: Buffer tidak kosong
+\end{itemize}
+
+\textbf{Mengapa perlu both checks?}
+\begin{itemize}
+    \item Defensive programming
+    \item Prevent processing empty input
+    \item Handle edge cases gracefully
+\end{itemize}
+
+\subsubsection{Terminate Input String}
+
+\begin{lstlisting}
+currentInput[inputLength] = '\0';
+\end{lstlisting}
+
+\textbf{Mengapa perlu null terminator?}
+\begin{itemize}
+    \item C-style strings must end dengan '\textbackslash0'
+    \item \texttt{atof()} butuh null-terminated string
+    \item Without this, atof() bisa read garbage memory
+\end{itemize}
+
+\subsubsection{Convert String to Double}
+
+\begin{lstlisting}
+double num = atof(currentInput);
+\end{lstlisting}
+
+\textbf{atof() Function:}
+\begin{itemize}
+    \item "ASCII to Float"
+    \item Parse string menjadi double
+    \item From \texttt{<cstdlib>} (included via \texttt{<cstdio>})
+\end{itemize}
+
+\begin{examplebox}[Examples]
+\begin{lstlisting}
+atof("123")     → 123.0
+atof("123.45")  → 123.45
+atof("0.5")     → 0.5
+atof("-45.67")  → -45.67
+\end{lstlisting}
+\end{examplebox}
+
+\subsubsection{Execute Operation or Store First Value}
+
+\begin{lstlisting}
+if (lastOperator != 0)
+    currentValue = operation(lastOperator, 
+                            currentValue, num);
+else
+    currentValue = num;
+\end{lstlisting}
+
+\paragraph{Case 1: Ada Operator Pending}\mbox{}\\[0.5em]
+
+\begin{examplebox}[Chain Operations]
+\begin{verbatim}
+5 + 3 - 2 × 4 =
+
+Step 1: Input '5', tekan '+'
+  lastOperator = 0 → Store: currentValue = 5
+  lastOperator = '+'
+
+Step 2: Input '3', tekan '-'
+  lastOperator = '+' → Execute: 5 + 3 = 8
+  currentValue = 8, lastOperator = '-'
+
+Step 3: Input '2', tekan '×'
+  lastOperator = '-' → Execute: 8 - 2 = 6
+  currentValue = 6, lastOperator = 'x'
+
+Step 4: Input '4', tekan '='
+  lastOperator = 'x' → Execute: 6 × 4 = 24
+  currentValue = 24, lastOperator = 0
+\end{verbatim}
+\end{examplebox}
+
+\paragraph{Case 2: Tidak Ada Operator Pending}
+
+\textbf{Mengapa tidak execute operation?}
+\begin{itemize}
+    \item Ini angka pertama dalam expression
+    \item Belum ada operation yang perlu dilakukan
+    \item Just store untuk digunakan operation berikutnya
+\end{itemize}
+
+\subsubsection{Reset Input State}
+
+\begin{lstlisting}
+inputLength = digitCount = 0;
+hasDot = hasInput = false;
+\end{lstlisting}
+
+\textbf{Mengapa reset semua flags?}
+\begin{itemize}
+    \item Prepare untuk input number berikutnya
+    \item User akan start fresh setelah operator
+    \item Input lama sudah disimpan di currentValue
+\end{itemize}
+
+\subsubsection{Update Last Operator}
+
+\begin{lstlisting}
+lastOperator = (op == '=') ? 0 : op;
+\end{lstlisting}
+
+\textbf{Mengapa '=' clear lastOperator?}
+\begin{itemize}
+    \item '=' finalize calculation
+    \item No pending operation after '='
+    \item Next input starts new calculation
+\end{itemize}
+
+\begin{examplebox}[Complete Operation Trace]
+\begin{verbatim}
+Calculation: 7 + 3 =
+
+State awal:
+  currentValue = 0, lastOperator = 0
+
+User input '7':
+  digitorDot('7')
+  → currentInput = "7", hasInput = true
+
+User tekan '+':
+  operators('+')
+  → num = atof("7") = 7.0
+  → lastOperator = 0, so currentValue = 7.0
+  → lastOperator = '+'
+
+User input '3':
+  digitorDot('3')
+  → currentInput = "3", hasInput = true
+
+User tekan '=':
+  operators('=')
+  → num = atof("3") = 3.0
+  → lastOperator = '+', so operation('+', 7, 3)
+  → currentValue = 10.0
+  → lastOperator = 0 (cleared)
+
+Result: currentValue = 10.0
+\end{verbatim}
+\end{examplebox}
+
+\section{Main Function Implementation}
+
+\begin{lstlisting}
+int main() {
+    int t;
+    scanf("%d\n", &t);
+    
+    char input[2048];
+    
+    while (t--) {
+        fgets(input, sizeof(input), stdin);
+        
+        Calculator calc;
+        
+        int len = strlen(input);
+        for (int i = 0; i < len; i++) {
+            if (input[i] != '[') continue;
+            
+            i++;
+            if (i >= len) break;
+            char c = input[i];
+            
+            calc.processButton(c);
+            
+            while (i < len && input[i] != ']') i++;
+        }
+        
+        char output[16];
+        calc.getResult(output);
+        
+        printf("%s\n", output);
+    }
+    
+    return 0;
+}
+\end{lstlisting}
+
+\textbf{Fungsi:}
+\begin{itemize}
+    \item Driver program untuk testing Calculator class
+    \item Read test cases dari input
+    \item Parse button presses dari format \texttt{[button]}
+    \item Display hasil setiap test case
+\end{itemize}
+
+\subsection{Read Number of Test Cases}
+
+\begin{lstlisting}
+int t;
+scanf("%d\n", &t);
+\end{lstlisting}
+
+\begin{examplebox}[Format Input]
+\begin{verbatim}
+3
+[5][+][3][=]
+[1][0][/][2][=]
+[C]
+\end{verbatim}
+\textbf{First Line:} $t = 3$ (Ada 3 test cases)
+\end{examplebox}
+
+\subsection{Process Each Test Case}
+
+\begin{lstlisting}
+while (t--) {
+    // ... process one test case
+}
+\end{lstlisting}
+
+\textbf{Loop Behavior:}
+\begin{itemize}
+    \item \texttt{t--}: Decrement setelah check
+    \item Loop sampai $t = 0$
+    \item Each iteration process satu baris input
+\end{itemize}
+
+\subsection{Read Test Case Line}
+
+\begin{lstlisting}
+char input[2048];
+fgets(input, sizeof(input), stdin);
+\end{lstlisting}
+
+\textbf{fgets() vs scanf():}
+\begin{itemize}
+    \item fgets(): Read entire line termasuk spaces
+    \item scanf("\%s"): Stop at whitespace
+    \item Safer: include size limit
+\end{itemize}
+
+\subsection{Create Fresh Calculator Instance}
+
+\begin{lstlisting}
+Calculator calc;
+\end{lstlisting}
+
+\textbf{Fresh Instance untuk Each Test:}
+\begin{itemize}
+    \item Each test case independent
+    \item No state carry-over
+    \item Constructor initialize clean state
+\end{itemize}
+
+\begin{notebox}[Mengapa not reuse?]
+\begin{lstlisting}
+// Alternative (kurang clean):
+Calculator calc;
+while (t--) {
+    calc.reset();  // Manual reset
+    // ...
+}
+
+// Better (yang dipakai):
+while (t--) {
+    Calculator calc;  // Fresh instance
+    // ...
+}
+\end{lstlisting}
+
+Keuntungan fresh instance:
+\begin{itemize}
+    \item Clear intent: new calculator untuk new test
+    \item Automatic cleanup via destructor
+    \item No risk lupa reset
+\end{itemize}
+\end{notebox}
+
+\subsection{Parse Button Presses}
+
+\begin{lstlisting}
+int len = strlen(input);
+for (int i = 0; i < len; i++) {
+    if (input[i] != '[') continue;
+    
+    i++;
+    if (i >= len) break;
+    char c = input[i];
+    
+    calc.processButton(c);
+    
+    while (i < len && input[i] != ']') i++;
+}
+\end{lstlisting}
+
+\textbf{Format:} \texttt{[button]}
+\begin{itemize}
+    \item Each button wrapped dalam brackets
+    \item Examples: \texttt{[5]}, \texttt{[+]}, \texttt{[.]}, \texttt{[C]}
+\end{itemize}
+
+\begin{examplebox}[Example Parse]
+\begin{verbatim}
+Input: "[5][+][3][=]"
+Index:  0123456789...
+
+i=0: input[0]='[' → found!
+i=1: c='5' → processButton('5')
+i=1,2: skip to ']'
+
+i=3: input[3]='[' → found!
+i=4: c='+' → processButton('+')
+i=4,5: skip to ']'
+
+i=6: input[6]='[' → found!
+i=7: c='3' → processButton('3')
+i=7,8: skip to ']'
+
+i=9: input[9]='[' → found!
+i=10: c='=' → processButton('=')
+i=10,11: skip to ']'
+\end{verbatim}
+\end{examplebox}
+
+\subsection{Get and Display Result}
+
+\begin{lstlisting}
+char output[16];
+calc.getResult(output);
+printf("%s\n", output);
+\end{lstlisting}
+
+\begin{examplebox}[Complete Test Case Example]
+\begin{verbatim}
+Input: "[5][+][3][=]"
+
+Execution:
+1. calc.processButton('5')
+   → currentInput = "5"
+   
+2. calc.processButton('+')
+   → currentValue = 5
+   → lastOperator = '+'
+   
+3. calc.processButton('3')
+   → currentInput = "3"
+   
+4. calc.processButton('=')
+   → operation('+', 5, 3) = 8
+   → currentValue = 8
+   
+5. calc.getResult(output)
+   → formatOutput(8.0, output)
+   → output = "        8."
+   
+6. printf("%s\n", output)
+   → Display: "        8."
+\end{verbatim}
+\end{examplebox}
+
+\section{Kompleksitas}
+
+\subsection{Time Complexity}
+
+Analisis kompleksitas waktu program kalkulator ini dapat dijabarkan sebagai berikut:
+
+\begin{itemize}
+    \item \textbf{Input Processing (processButton):} \\
+    Setiap kali pengguna menekan tombol, fungsi \texttt{processButton()} akan menentukan jenis input yang diterima (angka, titik, operator, atau tombol clear). Proses ini dilakukan secara langsung melalui percabangan sederhana (\texttt{if-else}), tanpa adanya perulangan yang bergantung pada panjang input. \\
+    $\Rightarrow$ Kompleksitas: \textbf{O(1)} per tombol.
+
+    \item \textbf{Digit Handling (digitorDot):} \\
+    Fungsi ini memproses setiap karakter angka atau tanda titik yang dimasukkan ke dalam buffer \texttt{currentInput}. Operasi seperti penambahan karakter, validasi titik desimal, serta pembatasan digit maksimal (8 digit) semuanya dilakukan dengan manipulasi array kecil berukuran tetap. \\
+    $\Rightarrow$ Kompleksitas: \textbf{O(1)}.
+
+    \item \textbf{Operator Handling (operators):} \\
+    Fungsi ini memanggil \texttt{operation()} untuk mengeksekusi perhitungan antara nilai sebelumnya (\texttt{currentValue}) dengan angka baru (\texttt{num}). Selain itu, fungsi ini juga mengatur status internal seperti \texttt{hasInput} dan \texttt{lastOperator}. Karena operasi aritmetika (+, -, ×, :) dan pembaruan status dilakukan satu kali per panggilan, maka: \\
+    $\Rightarrow$ Kompleksitas: \textbf{O(1)}.
+
+    \item \textbf{Mathematical Operation (operation):} \\
+    Operasi aritmetika pada fungsi ini hanya mencakup empat jenis operator dasar. Pengecekan kondisi khusus seperti pembagian dengan nol (\texttt{b == 0.0}) dan overflow (\texttt{fabs(result) >= 1e100}) juga dilakukan sekali. Tidak ada iterasi yang bergantung pada ukuran data. \\
+    $\Rightarrow$ Kompleksitas: \textbf{O(1)}.
+
+    \item \textbf{Output Formatting (formatOutput):} \\
+    Fungsi \texttt{formatOutput()} digunakan untuk mengonversi hasil perhitungan menjadi bentuk tampilan yang seragam (misalnya scientific notation atau angka biasa). Walaupun fungsi ini memanggil operasi matematis seperti \texttt{log10}, \texttt{pow}, dan \texttt{round}, semua dilakukan sekali per hasil. \\
+    $\Rightarrow$ Kompleksitas: \textbf{O(1)}.
+
+    \item \textbf{Main Loop:} \\
+    Program membaca $t$ test case, dan setiap test case diproses dengan membaca input berupa tombol dalam tanda kurung siku \texttt{[x]}. Setiap karakter dicek satu per satu untuk menemukan tanda \texttt{'['}, sehingga waktu yang dibutuhkan sebanding dengan panjang input string. \\
+    $\Rightarrow$ Kompleksitas total untuk $n$ karakter tombol: \textbf{O(n)}.
+\end{itemize}
+
+\textbf{Kesimpulan:} \\
+Secara keseluruhan, kompleksitas waktu program dapat dirumuskan sebagai:
+\[
+T(n) = O(n)
+\]
+dimana $n$ adalah jumlah tombol yang ditekan pada satu test case. Dengan demikian, program ini sangat efisien karena waktu komputasinya hanya bergantung pada panjang input pengguna, bukan pada besarnya nilai numerik yang diproses.
+
+\subsection{Space Complexity}
+
+Analisis kompleksitas ruang program kalkulator ini sebagai berikut:
+
+\begin{itemize}
+    \item \textbf{Variabel Internal:} \\
+    Setiap instance \texttt{Calculator} hanya menyimpan sejumlah kecil variabel seperti:
+    \begin{itemize}
+        \item \texttt{double currentValue} (8 byte)
+        \item \texttt{char currentInput[12]} (penyimpanan input sementara)
+        \item Beberapa variabel boolean (\texttt{hasDot}, \texttt{errorState}, \texttt{hasInput}) dan karakter (\texttt{lastOperator})
+    \end{itemize}
+    Semua variabel ini berukuran tetap dan tidak bergantung pada jumlah tombol yang ditekan. \\
+    $\Rightarrow$ Kompleksitas: \textbf{O(1)}.
+
+    \item \textbf{Buffer Input dan Output:} \\
+    Pada fungsi \texttt{main()}, digunakan buffer tetap \texttt{char input[2048]} untuk membaca seluruh baris input, serta \texttt{char output[16]} untuk mencetak hasil akhir. Ukuran buffer tidak berubah sepanjang program berjalan. \\
+    $\Rightarrow$ Kompleksitas: \textbf{O(1)}.
+
+    \item \textbf{Tanpa Alokasi Dinamis:} \\
+    Program tidak menggunakan struktur data dinamis seperti \texttt{vector}, \texttt{list}, atau heap allocation. Semua variabel dialokasikan secara statis di stack.
+\end{itemize}
+
+\textbf{Kesimpulan:} \\
+\[
+S(n) = O(1)
+\]
+Artinya, program ini menggunakan ruang memori yang konstan dan efisien, sehingga sangat cocok untuk sistem dengan keterbatasan memori seperti kalkulator fisik atau perangkat tertanam (embedded system).
+
+\section{Kesimpulan}
+
+\subsection{Key Takeaways}
+
+\begin{enumerate}
+    \item Program ini mengimplementasikan kalkulator ilmiah berbasis \textbf{Object-Oriented Programming (OOP)} yang mampu menangani operasi aritmetika dasar seperti penjumlahan, pengurangan, perkalian, dan pembagian.
+    \item \textbf{Class Calculator} menjadi komponen utama yang menangani seluruh logika pemrosesan input, operasi matematika, serta format hasil keluaran.
+    \item Penggunaan \textbf{enkapsulasi} melalui variabel private seperti \texttt{currentValue}, \texttt{currentInput}, dan \texttt{lastOperator} menjaga keamanan dan konsistensi data internal.
+    \item Fungsi-fungsi seperti \texttt{digitorDot()}, \texttt{operators()}, dan \texttt{formatOutput()} memiliki tanggung jawab yang spesifik, mencerminkan prinsip \textbf{single responsibility} dalam desain perangkat lunak.
+    \item Program ini juga dilengkapi \textbf{mekanisme deteksi kesalahan (errorState)} untuk mencegah kesalahan fatal seperti pembagian dengan nol atau hasil perhitungan yang melebihi batas representasi angka.
+    \item Dengan kompleksitas waktu \textbf{O(n)} dan ruang \textbf{O(1)}, kalkulator ini efisien dan ringan dijalankan pada berbagai sistem.
+\end{enumerate}
+
+\subsection{Pembelajaran Penting}
+
+\begin{itemize}
+    \item Pendekatan \textbf{OOP} memberikan struktur yang lebih rapi dan mudah dikembangkan dibandingkan pendekatan prosedural. Melalui class \texttt{Calculator}, seluruh proses (input, operasi, output) terintegrasi dalam satu entitas yang modular.
+    \item Prinsip \textbf{encapsulation} diterapkan dengan baik untuk menjaga variabel internal agar tidak dapat dimodifikasi langsung dari luar class. Hal ini meningkatkan keamanan dan keandalan program.
+    \item Desain program juga menonjolkan \textbf{abstraksi fungsional}, di mana setiap metode memiliki peran jelas tanpa saling tumpang tindih. Misalnya, \texttt{digitorDot()} hanya bertanggung jawab menangani input angka, sementara \texttt{formatOutput()} fokus pada tampilan hasil akhir.
+    \item Penerapan \textbf{error handling} yang tepat (misalnya pengecekan pembagian dengan nol) menjadikan kalkulator lebih realistis, menyerupai perilaku kalkulator fisik.
+\end{itemize}
+
+\subsection{Tips Pemrograman}
+
+\begin{itemize}
+    \item Gunakan \textbf{class} untuk mengelompokkan data dan fungsi yang berkaitan.
+    \item Terapkan prinsip \textbf{modularisasi} agar kode mudah diuji dan diperluas.
+    \item Gunakan \textbf{const correctness} pada fungsi yang tidak mengubah state internal, untuk meningkatkan keamanan kode.
+    \item Pastikan setiap operasi aritmetika memiliki pengecekan kondisi error untuk menghindari hasil tak terduga.
+    \item Manfaatkan fungsi format seperti \texttt{sprintf()} untuk menghasilkan tampilan output yang seragam dan presisi tinggi.
+\end{itemize}
+
+\subsection{Kesimpulan Akhir}
+
+Program kalkulator ini menunjukkan penerapan yang matang dari prinsip \textbf{Object-Oriented Programming}, yaitu:
+
+\begin{itemize}
+    \item \textbf{Encapsulation:} melindungi data internal dari akses langsung.
+    \item \textbf{Abstraction:} menyederhanakan interaksi pengguna terhadap proses kompleks.
+    \item \textbf{Modularity:} setiap fungsi memiliki tanggung jawab tunggal dan jelas.
+\end{itemize}
+
+\section{Bukti Submission}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{buktiac.png}
+    \label{fig:placeholder}
+\end{figure}
 \end{document}
