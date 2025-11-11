@@ -1358,8 +1358,8 @@ else
 \textbf{Delegation:}
 \begin{itemize}
     \item Jika tidak error, delegate ke \texttt{formatOutput()}
-    \item \texttt{formatOutput()} handle complex logic formatting angka
-    \item Separation of concerns: \texttt{getResult()} hanya decide error atau normal
+    \item \texttt{formatOutput()} menghandle logika kompleks formatting angka
+    \item Separation of concerns: \texttt{getResult()} hanya menentukan error atau normal
 \end{itemize}
 
 \subsubsection{Mengapa menggunakan pointer untuk output?}
@@ -1380,10 +1380,10 @@ void getResult(char *output) {
 
 \textbf{Keuntungan pointer approach:}
 \begin{enumerate}
-    \item \textbf{No Memory Allocation}: Caller menyediakan buffer
-    \item \textbf{No Static Variable}: Lebih thread-safe
-    \item \textbf{Efficient}: Tidak ada copying string
-    \item \textbf{Flexible}: Caller kontrol lifetime buffer
+    \item \textbf{Tanpa Alokasi Memori Baru}: Caller menyediakan buffer
+    \item \textbf{Tanpa Variabel Statis}: Lebih thread-safe
+    \item \textbf{Efisien}: Tidak ada copying string
+    \item \textbf{Fleksibel}: Caller kontrol lifetime buffer
 \end{enumerate}
 
 \begin{examplebox}[Contoh Penggunaan]
@@ -1400,7 +1400,7 @@ printf("%s\n", output);
 \end{lstlisting}
 \end{examplebox}
 
-\section{Private Methods (Helper Functions)}
+\section{Private Methods (Fungsi Pembantu)}
 
 \subsection{Method operation()}
 
@@ -1441,7 +1441,7 @@ private:
     \item Internal implementation detail
     \item User tidak perlu (dan tidak boleh) memanggil langsung
     \item Hanya dipanggil dari \texttt{operators()} method
-    \item Encapsulation: hide complexity dari user
+    \item Encapsulation: menyembunyikan kompleksitas dari user
 \end{itemize}
 
 \textbf{Parameter:}
@@ -1453,16 +1453,16 @@ private:
 
 \subsubsection{Cara Kerja}
 
-\paragraph{1. Switch Statement untuk Operator}
+\paragraph{1. Switch Statement untuk Operator} \mbox{}
 
-\textbf{Mengapa menggunakan switch instead of if-else?}
+\textbf{Mengapa menggunakan switch dibandingkan dengan if-else?}
 
-Switch advantages:
+Keuntungan:
 \begin{itemize}
-    \item Lebih readable untuk multiple conditions
+    \item Lebih readable untuk banyak kondisi
     \item Compiler bisa optimize menjadi jump table
     \item Lebih cepat untuk banyak case
-    \item Intent lebih jelas: mapping operator ke operasi
+    \item Intensi lebih jelas: mapping operator ke operasi
 \end{itemize}
 
 \paragraph{Case '+': (Addition)}\mbox{}\\[0.5em]
@@ -1513,7 +1513,7 @@ case ':':
 \begin{itemize}
     \item Secara matematika, $x/0$ tidak terdefinisi
     \item Komputer tidak bisa menghitung ini
-    \item Harus ditangani secara explicit
+    \item Harus ditangani secara eksplisit
 \end{itemize}
 
 \item \textbf{Check b == 0.0}
@@ -1559,9 +1559,9 @@ default: return a;
 
 \textbf{Mengapa return a?}
 \begin{itemize}
-    \item Jika operator tidak recognized, return nilai pertama
+    \item Jika operator tidak diketahui, return nilai pertama
     \item Safe fallback: tidak crash, tidak corrupt data
-    \item Defensive programming: handle unexpected input gracefully
+    \item Defensive programming: menangani unexpected input dengan baik
 \end{itemize}
 
 \paragraph{2. Overflow Detection}\mbox{}\\[0.5em]
@@ -1589,7 +1589,7 @@ if (fabs(result) >= 1e100) {
 
 \textbf{Mengapa menggunakan fabs()?}
 \begin{itemize}
-    \item Check magnitude tanpa peduli sign (+ atau -)
+    \item Check magnitude tanpa peduli tanda (+ atau -)
     \item $-1e100$ sama bermasalahnya dengan $+1e100$
     \item \texttt{fabs()} dari \texttt{<cmath>} untuk floating point
 \end{itemize}
@@ -1605,7 +1605,7 @@ Display: "Error."
 \end{lstlisting}
 \end{examplebox}
 
-\subsection{Method formatOutput() - Overview}
+\subsection{Method formatOutput()}
 
 \begin{lstlisting}
 void formatOutput(double x, char *output) {
@@ -1641,7 +1641,7 @@ void formatOutput(double x, char *output) {
     \item Scientific notation untuk angka di luar range
 \end{itemize}
 
-\subsubsection{Handle Special Case: Very Small Numbers}
+\subsubsection{Kasus Khusus : Angka yang Sangat Kecil}
 
 \begin{lstlisting}
 if (fabs(x) <= 1e-100) {
@@ -1653,8 +1653,8 @@ if (fabs(x) <= 1e-100) {
 \textbf{Mengapa $1e-100$?}
 \begin{itemize}
     \item Angka lebih kecil dari $10^{-100}$ dianggap effectively zero
-    \item Terlalu kecil untuk meaningful calculation
-    \item Avoid underflow issues
+    \item Terlalu kecil untuk kalkulasi
+    \item Menghindari underflow
 \end{itemize}
 
 \textbf{Format "0.":}
@@ -1664,7 +1664,7 @@ if (fabs(x) <= 1e-100) {
     \item Right-aligned dalam 10 karakter: \texttt{"        0."}
 \end{itemize}
 
-\subsubsection{Handle Special Case: Very Large Numbers}
+\subsubsection{Kasus Khusus : Angka yang Sangat Besar}
 
 \begin{lstlisting}
 if (fabs(x) >= 1e100) {
@@ -1675,7 +1675,7 @@ if (fabs(x) >= 1e100) {
 
 \textbf{Consistent dengan operation() overflow check}
 \begin{itemize}
-    \item Jika somehow angka lolos dari operation(), catch di sini
+    \item Jika angka lolos dari operation(), dapat dicegah di sini
     \item Double defense mechanism
     \item Display "Error." untuk angka tidak bisa diformat
 \end{itemize}
@@ -1695,7 +1695,7 @@ bool negative = (x < 0);
     \item Cleaner code organization
 \end{itemize}
 
-\subsubsection{Scientific Notation untuk Extreme Values}
+\subsubsection{Scientific Notation untuk Nilai Extreme}
 
 \begin{lstlisting}
 if (round(abs_x) >= 1e8 || 
@@ -1707,14 +1707,14 @@ if (round(abs_x) >= 1e8 ||
 \textbf{Condition Breakdown:}
 
 \begin{itemize}
-\item \textbf{Condition 1:} \texttt{round(abs\_x) >= 1e8}
+\item \textbf{Kondisi 1:} \texttt{round(abs\_x) >= 1e8}
 \begin{itemize}
     \item Angka $\geq 100,000,000$ (8 digit atau lebih)
     \item Terlalu besar untuk fixed notation dalam 10 karakter
     \item Contoh: 123456789 tidak bisa fit tanpa scientific notation
 \end{itemize}
 
-\item \textbf{Condition 2:} \texttt{abs\_x < 5e-8 \&\& abs\_x > 1e-100}
+\item \textbf{Kondisi 2:} \texttt{abs\_x < 5e-8 \&\& abs\_x > 1e-100}
 \begin{itemize}
     \item Angka sangat kecil: antara 0.00000005 dan $10^{-100}$
     \item Terlalu banyak leading zeros
@@ -1722,7 +1722,7 @@ if (round(abs_x) >= 1e8 ||
 \end{itemize}
 \end{itemize}
 
-\begin{examplebox}[Scientific Notation Format]
+\begin{examplebox}[Format Notasi Scientific]
 \begin{lstlisting}
 Examples:
 123456789 → "1.2346 08"   (1.2346 × 10⁸)
@@ -1730,7 +1730,7 @@ Examples:
 \end{lstlisting}
 \end{examplebox}
 
-\subsubsection{Calculate Exponent}
+\subsubsection{Exponent}
 
 \begin{lstlisting}
 int exp = (int)floor(log10(abs_x));
@@ -1753,7 +1753,7 @@ floor(-2.91) = -3
 \textbf{Mengapa floor()?}
 \begin{itemize}
     \item Exponent harus integer
-    \item floor() rounds down (penting untuk negative exponents)
+    \item floor() melakukan pembulatan kebawah (penting untuk negative exponents)
     \item Contoh: $\log_{10}(0.5) = -0.301 \rightarrow$ floor $= -1$ (bukan 0)
 \end{itemize}
 
@@ -1777,9 +1777,9 @@ rounding = round(rounding * 10000.0) / 10000.0;
 
 \textbf{Mengapa 4 desimal?}
 \begin{itemize}
-    \item Scientific notation format: "X.XXXX±EE"
+    \item Format notasi scientific: "X.XXXX±EE"
     \item Total 10 karakter termasuk sign dan exponent
-    \item 4 desimal memberikan precision yang cukup
+    \item 4 desimal memberikan presisi yang cukup
 \end{itemize}
 
 \begin{examplebox}[Cara kerja rounding]
@@ -1821,11 +1821,11 @@ sprintf(temp, "%.4f", rounding);
 
 \textbf{Format \%.4f:}
 \begin{itemize}
-    \item Print dengan exactly 4 desimal
+    \item Print 4 desimal
     \item Contoh: 1.2346000... $\rightarrow$ "1.2346"
 \end{itemize}
 
-\subsubsection{Remove Trailing Zeros}
+\subsubsection{Menghilangkan Trailing Zeros}
 
 \begin{lstlisting}
 size_t len = strlen(temp);
@@ -1863,10 +1863,10 @@ Result: "1.234"
 \end{verbatim}
 \end{examplebox}
 
-\textbf{Mengapa tidak remove decimal point?}
+\textbf{Mengapa tidak menghilangkan decimal point?}
 \begin{itemize}
     \item Condition \texttt{lastNum > dot} ensure kita tidak hapus decimal point
-    \item Jika hasil "1.0", akan jadi "1." (keep dot)
+    \item Jika hasil "1.0", akan jadi "1." 
 \end{itemize}
 
 \subsubsection{Format Exponent}
@@ -1878,9 +1878,9 @@ int expVal = (exp >= 0) ? exp : -exp;
 
 \textbf{Exponent Formatting:}
 \begin{itemize}
-    \item Positive exponent: space ' ' as prefix
-    \item Negative exponent: minus '-' as prefix
-    \item Always 2 digits: leading zero jika perlu
+    \item Eksponen positif: space ' ' as prefix
+    \item Eksponen negatif: minus '-' as prefix
+    \item Selalu 2 digit: leading zero jika perlu
 \end{itemize}
 
 \begin{examplebox}[Contoh]
@@ -1904,12 +1904,12 @@ sprintf(output, "%10s", result);
 
 \textbf{Format String Breakdown:}
 \begin{itemize}
-    \item \texttt{\%s}: Mantissa string (e.g., "1.234")
-    \item \texttt{\%c}: Exponent sign (' ' or '-')
-    \item \texttt{\%02d}: Exponent value, 2 digits, zero-padded
+    \item \texttt{\%s}: String mantissa (e.g., "1.234")
+    \item \texttt{\%c}: Tanda eksponen (' ' or '-')
+    \item \texttt{\%02d}: Nilai eksponen
 \end{itemize}
 
-\begin{examplebox}[Examples]
+\begin{examplebox}[Contoh]
 \begin{lstlisting}
 Positive, large: "1.234 08"   (1.234 × 10⁸)
 Negative, large: "-1.234 08"  (-1.234 × 10⁸)
@@ -1924,10 +1924,10 @@ sprintf(output, "%10s", result);
 \end{lstlisting}
 \begin{itemize}
     \item Right-align dalam 10 karakter
-    \item Add leading spaces jika perlu
+    \item Menambahkan leading spaces jika perlu
 \end{itemize}
 
-\subsection{Fixed-Point Formatting (Else Branch)}
+\subsection{Fixed-Point Formatting}
 
 \begin{lstlisting}
 else {
@@ -1942,8 +1942,8 @@ else {
 
 \textbf{Fungsi:}
 \begin{itemize}
-    \item Format angka dalam fixed-point notation (bukan scientific)
-    \item Calculate berapa digit sebelum dan sesudah decimal point
+    \item Format angka dalam notasi fixed-point (bukan scientific)
+    \item Mengkalkulasi berapa digit sebelum dan sesudah decimal point
     \item Maksimal 8 digit signifikan total
 \end{itemize}
 
@@ -2048,7 +2048,7 @@ if (dot > 0) {
 }
 \end{lstlisting}
 
-\textbf{Addition: Add Decimal Point if Missing}
+\textbf{Penambahan: Menambahkan desimal jika tidak ada}
 
 \textbf{Mengapa add trailing dot?}
 \begin{itemize}
