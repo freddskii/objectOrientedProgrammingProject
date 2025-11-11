@@ -1624,23 +1624,23 @@ void formatOutput(double x, char *output) {
 }
 \end{lstlisting}
 
-\textbf{Fungsi:}
+\textbf{Fungsi Utama:}
 \begin{itemize}
-    \item Format angka double menjadi string untuk display
-    \item Handle special cases: very small, very large, negative numbers
-    \item Implement scientific notation untuk angka ekstrem
-    \item Ensure output selalu 10 karakter dengan format yang tepat
+    \item Mengubah nilai bertipe \texttt{double} menjadi \texttt{string} agar bisa ditampilkan pada layar kalkulator.
+    \item Menangani kasus khusus seperti angka yang sangat kecil, sangat besar, atau negatif.
+    \item Menggunakan notasi ilmiah (scientific notation) untuk menampilkan angka ekstrem.
+    \item Memastikan hasil keluaran selalu memiliki lebar tepat 10 karakter agar tampilan konsisten.
 \end{itemize}
 
-\textbf{Mengapa method ini complex?}
+\textbf{Mengapa fungsi ini kompleks?}
 \begin{itemize}
-    \item Kalkulator punya constraint display: hanya 10 karakter
-    \item Harus handle berbagai range angka: dari 0.00000001 sampai 99999999
-    \item Harus remove trailing zeros tapi keep desimal point
-    \item Scientific notation untuk angka di luar range
+    \item Tampilan kalkulator dibatasi hanya 10 karakter.
+    \item Harus mampu menampilkan berbagai rentang angka, mulai dari sangat kecil ($10^{-8}$) hingga sangat besar ($10^8$).
+    \item Harus menghapus nol berlebih di belakang angka (trailing zeros), tetapi tetap mempertahankan tanda titik desimal.
+    \item Menggunakan notasi ilmiah untuk angka yang tidak dapat ditampilkan secara normal (fixed-point).
 \end{itemize}
 
-\subsubsection{Kasus Khusus : Angka yang Sangat Kecil}
+\subsubsection{Kasus Khusus: Angka yang Sangat Kecil}
 
 \begin{lstlisting}
 if (fabs(x) <= 1e-100) {
@@ -1649,21 +1649,21 @@ if (fabs(x) <= 1e-100) {
 }
 \end{lstlisting}
 
-\textbf{Mengapa $1e-100$?}
+\textbf{Mengapa menggunakan batas $1e-100$?}
 \begin{itemize}
-    \item Angka lebih kecil dari $10^{-100}$ dianggap effectively zero
-    \item Terlalu kecil untuk kalkulasi
-    \item Menghindari underflow
+    \item Nilai di bawah $10^{-100}$ dianggap nol secara praktis (too small to compute).
+    \item Untuk menghindari \textit{underflow} (nilai terlalu kecil untuk direpresentasikan).
+    \item Menyederhanakan tampilan dan menghindari hasil yang tidak bermakna.
 \end{itemize}
 
 \textbf{Format "0.":}
 \begin{itemize}
-    \item Konsisten dengan format kalkulator
-    \item Trailing dot menunjukkan ini angka desimal
-    \item Right-aligned dalam 10 karakter: \texttt{"        0."}
+    \item Sesuai dengan standar tampilan kalkulator yang menunjukkan titik desimal.
+    \item “0.” menunjukkan angka nol desimal.
+    \item Hasil ditata rata kanan (\textit{right-aligned}) dalam 10 karakter, misalnya: \texttt{"        0."}.
 \end{itemize}
 
-\subsubsection{Kasus Khusus : Angka yang Sangat Besar}
+\subsubsection{Kasus Khusus: Angka yang Sangat Besar}
 
 \begin{lstlisting}
 if (fabs(x) >= 1e100) {
@@ -1672,29 +1672,28 @@ if (fabs(x) >= 1e100) {
 }
 \end{lstlisting}
 
-\textbf{Consistent dengan operation() overflow check}
+\textbf{Mengapa perlu pemeriksaan ini?}
 \begin{itemize}
-    \item Jika angka lolos dari operation(), dapat dicegah di sini
-    \item Double defense mechanism
-    \item Display "Error." untuk angka tidak bisa diformat
+    \item Untuk mencegah tampilan angka yang melebihi batas representasi kalkulator.
+    \item Sebagai perlindungan ganda terhadap \textit{overflow} yang mungkin luput dari fungsi operasi sebelumnya.
+    \item Menampilkan “Error.” agar pengguna tahu bahwa hasil tidak dapat diformat dengan benar.
 \end{itemize}
 
-\subsubsection{Prepare Variables}
+\subsubsection{Persiapan Variabel}
 
 \begin{lstlisting}
 double abs_x = fabs(x);
 bool negative = (x < 0);
 \end{lstlisting}
 
-\textbf{Mengapa pisahkan sign dari magnitude?}
+\textbf{Tujuan pemisahan tanda dan nilai absolut:}
 \begin{itemize}
-    \item Simplify formatting logic
-    \item Work dengan absolute value
-    \item Add sign di akhir jika perlu
-    \item Cleaner code organization
+    \item Mempermudah proses perhitungan dan pemformatan angka.
+    \item Operasi dilakukan pada nilai positif agar logika lebih sederhana.
+    \item Tanda negatif ditambahkan kembali setelah proses formatting selesai.
 \end{itemize}
 
-\subsubsection{Scientific Notation untuk Nilai Extreme}
+\subsubsection{Notasi Ilmiah untuk Nilai Ekstrem}
 
 \begin{lstlisting}
 if (round(abs_x) >= 1e8 || 
@@ -1703,39 +1702,39 @@ if (round(abs_x) >= 1e8 ||
 }
 \end{lstlisting}
 
-\textbf{Condition Breakdown:}
+\textbf{Penjelasan kondisi:}
 
 \begin{itemize}
 \item \textbf{Kondisi 1:} \texttt{round(abs\_x) >= 1e8}
 \begin{itemize}
-    \item Angka $\geq 100,000,000$ (8 digit atau lebih)
-    \item Terlalu besar untuk fixed notation dalam 10 karakter
-    \item Contoh: 123456789 tidak bisa fit tanpa scientific notation
+    \item Untuk angka yang sangat besar ($\geq 100,000,000$).
+    \item Tidak muat dalam tampilan fixed 10 karakter.
+    \item Contoh: 123456789 harus ditulis sebagai $1.2346 \times 10^8$.
 \end{itemize}
 
 \item \textbf{Kondisi 2:} \texttt{abs\_x < 5e-8 \&\& abs\_x > 1e-100}
 \begin{itemize}
-    \item Angka sangat kecil: antara 0.00000005 dan $10^{-100}$
-    \item Terlalu banyak leading zeros
-    \item Contoh: 0.000000012 lebih baik jadi 1.2 -08
+    \item Untuk angka yang sangat kecil namun bukan nol.
+    \item Jika ditulis normal akan menghasilkan banyak nol di depan desimal.
+    \item Contoh: 0.000000012 lebih baik ditulis sebagai $1.2 \times 10^{-8}$.
 \end{itemize}
 \end{itemize}
 
-\begin{examplebox}[Format Notasi Scientific]
+\begin{examplebox}[Contoh Format Scientific Notation]
 \begin{lstlisting}
-Examples:
 123456789 → "1.2346 08"   (1.2346 × 10⁸)
 0.00000123 → "1.23 -06"   (1.23 × 10⁻⁶)
 \end{lstlisting}
 \end{examplebox}
 
-\subsubsection{Exponent}
+\subsubsection{Menentukan Nilai Eksponen}
 
 \begin{lstlisting}
 int exp = (int)floor(log10(abs_x));
 \end{lstlisting}
 
-\begin{examplebox}[Cara kerja log10()]
+\textbf{Cara kerja fungsi log10():}
+\begin{examplebox}[Ilustrasi]
 \begin{lstlisting}
 abs_x = 1234.5
 log10(1234.5) = 3.091...
@@ -1749,48 +1748,39 @@ floor(-2.91) = -3
 \end{lstlisting}
 \end{examplebox}
 
-\textbf{Mengapa floor()?}
+\textbf{Alasan penggunaan floor():}
 \begin{itemize}
-    \item Exponent harus integer
-    \item floor() melakukan pembulatan kebawah (penting untuk negative exponents)
-    \item Contoh: $\log_{10}(0.5) = -0.301 \rightarrow$ floor $= -1$ (bukan 0)
+    \item Nilai eksponen harus berupa bilangan bulat.
+    \item \texttt{floor()} membulatkan ke bawah, penting untuk eksponen negatif.
+    \item Contoh: $\log_{10}(0.5) = -0.301 \rightarrow$ floor $= -1$ (bukan 0).
 \end{itemize}
 
-\subsubsection{Normalize Mantissa}
+\subsubsection{Normalisasi Mantissa}
 
 \begin{lstlisting}
 double rounding = abs_x / pow(10.0, exp);
 rounding = round(rounding * 10000.0) / 10000.0;
 \end{lstlisting}
 
-\textbf{Step 1: Normalize ke range (1, 10)}
+\textbf{Langkah 1: Normalisasi ke rentang (1, 10)}
 \begin{lstlisting}
 rounding = abs_x / pow(10.0, exp);
 // Contoh: 1234.5 / 10³ = 1.2345
 \end{lstlisting}
 
-\textbf{Step 2: Round ke 4 desimal}
+\textbf{Langkah 2: Pembulatan 4 desimal}
 \begin{lstlisting}
 rounding = round(rounding * 10000.0) / 10000.0;
 \end{lstlisting}
 
 \textbf{Mengapa 4 desimal?}
 \begin{itemize}
-    \item Format notasi scientific: "X.XXXX±EE"
-    \item Total 10 karakter termasuk sign dan exponent
-    \item 4 desimal memberikan presisi yang cukup
+    \item Format notasi ilmiah menggunakan pola “X.XXXX±EE”.
+    \item Total 10 karakter termasuk tanda dan eksponen.
+    \item 4 desimal dianggap cukup presisi untuk tampilan kalkulator.
 \end{itemize}
 
-\begin{examplebox}[Cara kerja rounding]
-\begin{verbatim}
-rounding = 1.23456
-rounding × 10000 = 12345.6
-round(12345.6) = 12346.0
-12346.0 / 10000 = 1.2346
-\end{verbatim}
-\end{examplebox}
-
-\subsubsection{Handle Mantissa $\geq$ 10}
+\subsubsection{Penyesuaian Mantissa ≥ 10}
 
 \begin{lstlisting}
 if (rounding >= 10.0) {
@@ -1799,32 +1789,31 @@ if (rounding >= 10.0) {
 }
 \end{lstlisting}
 
-\textbf{Mengapa ini bisa terjadi?}
+\textbf{Mengapa perlu?}
 \begin{itemize}
-    \item Rounding bisa menyebabkan mantissa jadi 10.0
-    \item Contoh: 9.9999 rounded menjadi 10.0
+    \item Karena pembulatan bisa menyebabkan mantissa menjadi 10.0.
+    \item Maka perlu dinormalisasi kembali dengan menaikkan eksponen.
 \end{itemize}
 
-\textbf{Normalisasi:}
 \begin{lstlisting}
 Sebelum: 10.0 × 10³
-Setelah: 1.0 × 10⁴
+Sesudah: 1.0 × 10⁴
 \end{lstlisting}
 
-\subsubsection{Format Mantissa String}
+\subsubsection{Format Mantissa Menjadi String}
 
 \begin{lstlisting}
 char temp[20];
 sprintf(temp, "%.4f", rounding);
 \end{lstlisting}
 
-\textbf{Format \%.4f:}
+\textbf{Penjelasan format:}
 \begin{itemize}
-    \item Print 4 desimal
-    \item Contoh: 1.2346000... $\rightarrow$ "1.2346"
+    \item \texttt{\%.4f} menampilkan angka dengan empat digit desimal.
+    \item Contoh: 1.2346000 → “1.2346”.
 \end{itemize}
 
-\subsubsection{Menghilangkan Trailing Zeros}
+\subsubsection{Menghapus Nol di Belakang Angka (Trailing Zeros)}
 
 \begin{lstlisting}
 size_t len = strlen(temp);
@@ -1845,51 +1834,41 @@ if (dot > 0) {
 }
 \end{lstlisting}
 
-\begin{examplebox}[Contoh trace]
+\begin{examplebox}[Contoh proses]
 \begin{verbatim}
 Input:  temp = "1.2340"
-        len = 6, dot = 1
-
-lastNum = 5 (karakter '0')
-Check: lastNum > dot && temp[5] == '0' → true
-  lastNum = 4
-
-Check: lastNum > dot && temp[4] == '4' → false
-  Stop
-
-temp[5] = '\0'
-Result: "1.234"
+Output: "1.234"
 \end{verbatim}
 \end{examplebox}
 
-\textbf{Mengapa tidak menghilangkan decimal point?}
+\textbf{Alasan tidak menghapus titik desimal:}
 \begin{itemize}
-    \item Condition \texttt{lastNum > dot} ensure kita tidak hapus decimal point
-    \item Jika hasil "1.0", akan jadi "1." 
+    \item Kondisi \texttt{lastNum > dot} memastikan titik tidak terhapus.
+    \item Contoh: “1.0” akan menjadi “1.”, tetap menunjukkan angka desimal.
 \end{itemize}
 
-\subsubsection{Format Exponent}
+\subsubsection{Format Eksponen}
 
 \begin{lstlisting}
 char expSign = (exp >= 0) ? ' ' : '-';
 int expVal = (exp >= 0) ? exp : -exp;
 \end{lstlisting}
 
-\textbf{Exponent Formatting:}
+\textbf{Format tampilan eksponen:}
 \begin{itemize}
-    \item Eksponen positif: space ' ' as prefix
-    \item Eksponen negatif: minus '-' as prefix
-    \item Selalu 2 digit: leading zero jika perlu
+    \item Eksponen positif diberi spasi.
+    \item Eksponen negatif diberi tanda minus.
+    \item Selalu dua digit (contoh: 08, -06).
 \end{itemize}
 
 \begin{examplebox}[Contoh]
 \begin{verbatim}
-exp = 8   → expSign = ' ', expVal = 8  → " 08"
-exp = -6  → expSign = '-', expVal = 6  → "-06"
+exp = 8   → " 08"
+exp = -6  → "-06"
 \end{verbatim}
 \end{examplebox}
 
-\subsubsection{Combine Mantissa and Exponent}
+\subsubsection{Menggabungkan Mantissa dan Eksponen}
 
 \begin{lstlisting}
 char result[20];
@@ -1901,32 +1880,31 @@ else
 sprintf(output, "%10s", result);
 \end{lstlisting}
 
-\textbf{Format String Breakdown:}
+\textbf{Makna setiap bagian format:}
 \begin{itemize}
-    \item \texttt{\%s}: String mantissa (e.g., "1.234")
-    \item \texttt{\%c}: Tanda eksponen (' ' or '-')
-    \item \texttt{\%02d}: Nilai eksponen
+    \item \texttt{\%s}: nilai mantissa (misalnya “1.234”).
+    \item \texttt{\%c}: tanda eksponen (spasi atau minus).
+    \item \texttt{\%02d}: nilai eksponen dua digit.
 \end{itemize}
 
-\begin{examplebox}[Contoh]
+\begin{examplebox}[Contoh Output]
 \begin{lstlisting}
-Positive, large: "1.234 08"   (1.234 × 10⁸)
-Negative, large: "-1.234 08"  (-1.234 × 10⁸)
-Positive, small: "1.234-06"   (1.234 × 10⁻⁶)
-Negative, small: "-1.234-06"  (-1.234 × 10⁻⁶)
+"1.234 08"   (1.234 × 10⁸)
+"1.234-06"   (1.234 × 10⁻⁶)
+"-1.234 08"  (-1.234 × 10⁸)
 \end{lstlisting}
 \end{examplebox}
 
-\textbf{Final sprintf:}
+\textbf{Format akhir:}
 \begin{lstlisting}
 sprintf(output, "%10s", result);
 \end{lstlisting}
 \begin{itemize}
-    \item Right-align dalam 10 karakter
-    \item Menambahkan leading spaces jika perlu
+    \item Meratakan teks ke kanan dalam 10 karakter.
+    \item Menambahkan spasi di depan jika kurang dari 10 karakter.
 \end{itemize}
 
-\subsection{Fixed-Point Formatting}
+\subsection{Format Fixed-Point}
 
 \begin{lstlisting}
 else {
@@ -1939,93 +1917,56 @@ else {
 }
 \end{lstlisting}
 
-\textbf{Fungsi:}
+\textbf{Fungsi bagian ini:}
 \begin{itemize}
-    \item Format angka dalam notasi fixed-point (bukan scientific)
-    \item Mengkalkulasi berapa digit sebelum dan sesudah decimal point
-    \item Maksimal 8 digit signifikan total
+    \item Menampilkan angka menggunakan format biasa (bukan scientific).
+    \item Menghitung berapa banyak digit sebelum dan sesudah titik desimal.
+    \item Menjaga jumlah digit signifikan maksimum tetap 8.
 \end{itemize}
 
-\subsubsection{Calculate Integer Digits}
+\subsubsection{Menghitung Jumlah Digit Integer}
 
 \begin{lstlisting}
 int numInit = (abs_x < 1.0) ? 1 : 
               (int)floor(log10(abs_x)) + 1;
 \end{lstlisting}
 
-\textbf{Untuk angka < 1.0:}
-\begin{verbatim}
-abs_x = 0.123
-numInit = 1  (satu digit: "0")
-\end{verbatim}
+\textbf{Penjelasan:}
 \begin{itemize}
-    \item Leading "0" before decimal point
-    \item Counted as 1 digit
+    \item Untuk angka kurang dari 1, dianggap memiliki satu digit (nol di depan).
+    \item Untuk angka lebih besar atau sama dengan 1, jumlah digit dihitung dengan rumus:
+    \[
+    \text{digit} = \lfloor \log_{10}(x) \rfloor + 1
+    \]
 \end{itemize}
 
-\textbf{Untuk angka $\geq$ 1.0:}
-\begin{verbatim}
-abs_x = 1234.5
-log10(1234.5) = 3.091
-floor(3.091) + 1 = 4
-numInit = 4  (empat digit: "1234")
-\end{verbatim}
-
-\textbf{Mengapa +1?}
-\begin{itemize}
-    \item $\log_{10}(10) = 1$, tapi "10" punya 2 digit
-    \item $\log_{10}(100) = 2$, tapi "100" punya 3 digit
-    \item Formula: digits = $\lfloor \log_{10}(x) \rfloor + 1$
-\end{itemize}
-
-\subsubsection{Calculate Decimal Digits}
+\subsubsection{Menghitung Jumlah Digit Desimal}
 
 \begin{lstlisting}
 int numDecimal = 8 - numInit;
 if (numDecimal < 0) numDecimal = 0;
 \end{lstlisting}
 
-\textbf{8 Digit Limit:}
+\textbf{Penjelasan:}
 \begin{itemize}
-    \item Total significant digits = 8
-    \item Jika 4 digit integer, maka 4 digit decimal
-    \item Jika 8 digit integer, maka 0 digit decimal
+    \item Total digit signifikan dibatasi 8.
+    \item Jika digit integer banyak, digit desimal dikurangi agar total tetap 8.
 \end{itemize}
 
-\begin{examplebox}[Examples]
-\begin{verbatim}
-123.45678    → numInit=3, numDecimal=5 
-             → "123.45678"
-12345678.9   → numInit=8, numDecimal=0 
-             → "12345678."
-0.123456789  → numInit=1, numDecimal=7 
-             → "0.1234568" (rounded)
-\end{verbatim}
-\end{examplebox}
-
-\subsubsection{Format dengan sprintf}
+\subsubsection{Pemformatan dengan sprintf}
 
 \begin{lstlisting}
 char temp[20];
 sprintf(temp, "%.*f", numDecimal, abs_x);
 \end{lstlisting}
 
-\textbf{Format \%.*f:}
+\textbf{Keterangan:}
 \begin{itemize}
-    \item \texttt{*}: Precision dari parameter (numDecimal)
-    \item \texttt{f}: Fixed-point format
-    \item Dynamic precision based on number size
+    \item \texttt{*} menunjukkan presisi desimal yang ditentukan secara dinamis.
+    \item \texttt{f} berarti format angka biasa (fixed-point).
 \end{itemize}
 
-\begin{examplebox}[Examples]
-\begin{verbatim}
-sprintf(temp, "%.5f", 123.456789) → "123.45679"
-sprintf(temp, "%.2f", 123.456789) → "123.46"
-sprintf(temp, "%.0f", 123.456789) → "123"
-\end{verbatim}
-\end{examplebox}
-
-\subsubsection{Remove Trailing Zeros}
+\subsubsection{Menghapus Nol dan Menambah Titik Desimal}
 
 \begin{lstlisting}
 size_t len = strlen(temp);
@@ -2047,16 +1988,13 @@ if (dot > 0) {
 }
 \end{lstlisting}
 
-\textbf{Penambahan: Menambahkan desimal jika tidak ada}
-
-\textbf{Mengapa add trailing dot?}
+\textbf{Alasan:}
 \begin{itemize}
-    \item Jika numDecimal = 0, sprintf tidak include '.'
-    \item Contoh: "12345678" $\rightarrow$ "12345678."
-    \item Konsisten dengan format kalkulator
+    \item Jika tidak ada titik desimal (contoh: “123”), ditambahkan “.” di akhir agar konsisten.
+    \item Jika ada titik desimal, nol di belakang dihapus.
 \end{itemize}
 
-\subsubsection{Add Sign and Format Final Output}
+\subsubsection{Menambahkan Tanda dan Format Akhir}
 
 \begin{lstlisting}
 char result[20];
@@ -2068,34 +2006,16 @@ else
 sprintf(output, "%10s", result);
 \end{lstlisting}
 
-\textbf{Add Negative Sign:}
+\textbf{Langkah terakhir:}
 \begin{itemize}
-    \item Prepend '-' jika angka negative
-    \item Simple string concatenation
+    \item Menambahkan tanda minus jika angka negatif.
+    \item Meratakan hasil akhir ke kanan dalam 10 karakter untuk tampilan kalkulator.
 \end{itemize}
 
-\textbf{Final Formatting:}
-\begin{itemize}
-    \item Right-align dalam 10 karakter
-    \item Consistent dengan semua output format
-\end{itemize}
-
-\begin{examplebox}[Complete Example Trace]
+\begin{examplebox}[Contoh Lengkap]
 \begin{verbatim}
 Input: x = -123.45
-
-Step 1: abs_x = 123.45, negative = true
-Step 2: Not extreme → use fixed-point
-Step 3: numInit = floor(log10(123.45)) + 1 = 3
-Step 4: numDecimal = 8 - 3 = 5
-Step 5: sprintf(temp, "%.5f", 123.45) 
-        → "123.45000"
-Step 6: Remove trailing zeros → "123.45"
-Step 7: temp already has '.'
-Step 8: sprintf(result, "-%s", "123.45") 
-        → "-123.45"
-Step 9: sprintf(output, "%10s", "-123.45") 
-        → "   -123.45"
+Output: "   -123.45"
 \end{verbatim}
 \end{examplebox}
 
@@ -2851,4 +2771,31 @@ Program kalkulator ini menunjukkan penerapan yang matang dari prinsip \textbf{Ob
     \includegraphics[width=1\linewidth]{buktiac.png}
     \label{fig:placeholder}
 \end{figure}
+
+\subsection{Daftar Pustaka}
+\begin{thebibliography}{99}
+
+\bibitem{rice2007}
+Rice University. (2007). \textit{COMP 201: Lab 12 – Finite State Machines (Lab: Cheap Calculator)}. Department of Computer Science, Rice University. Retrieved from \url{https://www.clear.rice.edu/comp201/07-spring/labs/lab12/}
+
+\bibitem{goldberg1991}
+Goldberg, D. (1991). \textit{What Every Computer Scientist Should Know About Floating-Point Arithmetic}. ACM Computing Surveys, \textbf{23}(1), 5--48. \url{https://dl.acm.org/doi/10.1145/103162.103163}
+
+\bibitem{steele1990}
+Steele, G. L., Jr., \& White, J. L. (1990). \textit{How to Print Floating-Point Numbers Accurately}. In: Proceedings of the ACM SIGPLAN 1990 Conference on Programming Language Design and Implementation (PLDI '90), pp. 112--126. ACM. DOI: \url{https://doi.org/10.1145/93542.93559}
+
+\bibitem{loitsch2010}
+Loitsch, F. (2010). \textit{Printing Floating-Point Numbers Quickly and Accurately with Integers}. In: Proceedings of the 31st ACM SIGPLAN Conference on Programming Language Design and Implementation (PLDI '10), pp. 233--243. ACM. DOI: \url{https://doi.org/10.1145/1806596.1806623}
+
+\bibitem{juckett2014}
+Juckett, R. (2014, March 5). \textit{Printing Floating-Point Numbers: An Always Correct Method}. RyanJuckett.com. Retrieved from \url{https://www.ryanjuckett.com/printing-floating-point-numbers/}
+
+\bibitem{vunabandi2017}
+Vunabandi, R. (2017, July). \textit{Designing a Calculator with FSM Logic}. Medium. Retrieved from \url{https://rvunabandi.medium.com/making-a-calculator-in-javascript-64193ea6a492}
+
+\bibitem{garcia2023}
+García-Vargas, I., \& Senhadji-Navarro, R. (2023). \textit{A New Approach for Implementing Finite State Machines with Input Multiplexing}. \textit{Electronics}, \textbf{12}(18), 3763. DOI: \url{https://doi.org/10.3390/electronics12183763}
+
+\end{thebibliography}
+
 \end{document}
