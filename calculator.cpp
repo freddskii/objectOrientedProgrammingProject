@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <cmath>
 #include <cstring>
-
+ 
 class Calculator {
 private:
     double currentValue;
@@ -208,7 +208,7 @@ public:
             formatOutput(currentValue, output);
     }
 };
-
+ 
 int main() {
     int t;
     scanf("%d\n", &t);
