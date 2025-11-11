@@ -2,234 +2,242 @@
 #include <cmath>
 #include <cstring>
 
-inline double apply_op(char op, double a, double b, bool &error) {
-    double result;
-    switch (op) {
-        case '+': result = a + b; break;
-        case '-': result = a - b; break;
-        case 'x': result = a * b; break;
-        case ':': 
-            if (b == 0.0) {
-                error = true;
-                return 0.0;
-            }
-            result = a / b;
-            break;
-        default: return a;
-    }
-    if (fabs(result) >= 1e100) {
-        error = true;
-        return 0.0;
-    }
-    return result;
-}
-
-void format_output(double x, char *output) {
-    if (fabs(x) <= 1e-100) {
-        sprintf(output, "%10s", "0.");
-        return;
-    }
-    if (fabs(x) >= 1e100) {
-        sprintf(output, "%10s", "Error.");
-        return;
+class Calculator {
+private:
+    double currentValue;
+    char currentInput[12];
+    int inputLength;
+    int digitCount;
+    bool hasDot;
+    bool hasInput;
+    bool errorState;
+    char lastOperator;
+    
+    double operation(char op, double a, double b) {
+        double result;
+        switch (op) {
+            case '+': result = a + b; break;
+            case '-': result = a - b; break;
+            case 'x': result = a * b; break;
+            case ':':
+                if (b == 0.0) {
+                    errorState = true;
+                    return 0.0;
+                }
+                result = a / b;
+                break;
+            default: return a;
+        }
+        if (fabs(result) >= 1e100) {
+            errorState = true;
+            return 0.0;
+        }
+        return result;
     }
     
-    double abs_x = fabs(x);
-    bool negative = (x < 0);
-    
-    if (round(abs_x) >= 1e8 || (abs_x < 5e-8 && abs_x > 1e-100)) {
-        int exponent = (int)floor(log10(abs_x));
-        double mantissa = abs_x / pow(10.0, exponent);
-        mantissa = round(mantissa * 10000.0) / 10000.0;
-        
-        if (mantissa >= 10.0) {
-            mantissa /= 10.0;
-            exponent++;
+    void formatOutput(double x, char *output) {
+        if (fabs(x) <= 1e-100) {
+            sprintf(output, "%10s", "0.");
+            return;
+        }
+        if (fabs(x) >= 1e100) {
+            sprintf(output, "%10s", "Error.");
+            return;
         }
         
-        char temp[20];
-        sprintf(temp, "%.4f", mantissa);
+        double abs_x = fabs(x);
+        bool negative = (x < 0);
         
-        size_t len = strlen(temp);
-        size_t dot_pos = 0;
-        for (size_t j = 0; j < len; j++) {
-            if (temp[j] == '.') {
-                dot_pos = j;
-                break;
+        if (round(abs_x) >= 1e8 || (abs_x < 5e-8 && abs_x > 1e-100)) {
+            int exp = (int)floor(log10(abs_x));
+            double rounding = abs_x / pow(10.0, exp);
+            rounding = round(rounding * 10000.0) / 10000.0;
+            
+            if (rounding >= 10.0) {
+                rounding /= 10.0;
+                exp++;
             }
-        }
-        
-        if (dot_pos > 0) {
-            size_t last_non_zero = len - 1;
-            while (last_non_zero > dot_pos && temp[last_non_zero] == '0') {
-                last_non_zero--;
+            
+            char temp[20];
+            sprintf(temp, "%.4f", rounding);
+            
+            size_t len = strlen(temp);
+            size_t dot = 0;
+            for (size_t j = 0; j < len; j++) {
+                if (temp[j] == '.') {
+                    dot = j;
+                    break;
+                }
             }
-            temp[last_non_zero + 1] = '\0';
-        }
-        
-        char exp_sign = (exponent >= 0) ? ' ' : '-';
-        int exp_val = (exponent >= 0) ? exponent : -exponent;
-        
-        char result[20];
-        if (negative) {
-            sprintf(result, "-%s%c%02d", temp, exp_sign, exp_val);
+            
+            if (dot > 0) {
+                size_t lastNum = len - 1;
+                while (lastNum > dot && temp[lastNum] == '0') {
+                    lastNum--;
+                }
+                temp[lastNum + 1] = '\0';
+            }
+            
+            char expSign = (exp >= 0) ? ' ' : '-';
+            int expVal = (exp >= 0) ? exp : -exp;
+            
+            char result[20];
+            if (negative)
+                sprintf(result, "-%s%c%02d", temp, expSign, expVal);
+            else
+                sprintf(result, "%s%c%02d", temp, expSign, expVal);
+            
+            sprintf(output, "%10s", result);
         } else {
-            sprintf(result, "%s%c%02d", temp, exp_sign, exp_val);
-        }
-        
-        sprintf(output, "%10s", result);
-    } else {
-        int integer_digits = (abs_x < 1.0) ? 1 : (int)floor(log10(abs_x)) + 1;
-        int decimal_places = 8 - integer_digits;
-        if (decimal_places < 0) decimal_places = 0;
-        
-        char temp[20];
-        sprintf(temp, "%.*f", decimal_places, abs_x);
-        
-        size_t len = strlen(temp);
-        size_t dot_pos = 0;
-        for (size_t j = 0; j < len; j++) {
-            if (temp[j] == '.') {
-                dot_pos = j;
-                break;
+            int numInit = (abs_x < 1.0) ? 1 : (int)floor(log10(abs_x)) + 1;
+            int numDecimal = 8 - numInit;
+            if (numDecimal < 0) numDecimal = 0;
+            
+            char temp[20];
+            sprintf(temp, "%.*f", numDecimal, abs_x);
+            
+            size_t len = strlen(temp);
+            size_t dot = 0;
+            for (size_t j = 0; j < len; j++) {
+                if (temp[j] == '.') {
+                    dot = j;
+                    break;
+                }
             }
-        }
-        
-        if (dot_pos > 0) {
-            size_t last_non_zero = len - 1;
-            while (last_non_zero > dot_pos && temp[last_non_zero] == '0') {
-                last_non_zero--;
+            
+            if (dot > 0) {
+                size_t lastNum = len - 1;
+                while (lastNum > dot && temp[lastNum] == '0')
+                    lastNum--;
+                temp[lastNum + 1] = '\0';
+            } else {
+                strcat(temp, ".");
             }
-            temp[last_non_zero + 1] = '\0';
-
-            if (temp[strlen(temp) - 1] != '.') {
-            }
-        } else {
-            strcat(temp, ".");
+            
+            char result[20];
+            if (negative)
+                sprintf(result, "-%s", temp);
+            else
+                strcpy(result, temp);
+            
+            sprintf(output, "%10s", result);
         }
-        
-        char result[20];
-        if (negative) {
-            sprintf(result, "-%s", temp);
-        } else {
-            strcpy(result, temp);
-        }
-        
-        sprintf(output, "%10s", result);
     }
-}
+    
+    void digitorDot(char c) {
+        if (c == '.') {
+            if (!hasInput) {
+                currentInput[0] = '0';
+                currentInput[1] = '.';
+                inputLength = 2;
+                digitCount = 1;
+                hasDot = hasInput = true;
+            } else if (!hasDot) {
+                currentInput[inputLength++] = '.';
+                hasDot = true;
+            }
+        } else if (c == '0') {
+            if (!hasInput) {
+                currentInput[0] = '0';
+                inputLength = digitCount = 1;
+                hasInput = true;
+            } else if (!(inputLength == 1 && currentInput[0] == '0' && !hasDot) && digitCount < 8) {
+                currentInput[inputLength++] = c;
+                digitCount++;
+            }
+        } else {
+            if (!hasInput) {
+                currentInput[0] = c;
+                inputLength = digitCount = 1;
+                hasInput = true;
+            } else if (inputLength == 1 && currentInput[0] == '0' && !hasDot) {
+                currentInput[0] = c;
+            } else if (digitCount < 8) {
+                currentInput[inputLength++] = c;
+                digitCount++;
+            }
+        }
+    }
+    
+    void operators(char op) {
+        if (hasInput && inputLength > 0) {
+            currentInput[inputLength] = '\0';
+            double num = atof(currentInput);
+            
+            if (lastOperator != 0)
+                currentValue = operation(lastOperator, currentValue, num);
+            else
+                currentValue = num;
+            
+            inputLength = digitCount = 0;
+            hasDot = hasInput = false;
+        }
+        lastOperator = (op == '=') ? 0 : op;
+    }
+    
+public:
+    Calculator() {
+        reset();
+    }
+    
+    void reset() {
+        currentValue = 0.0;
+        inputLength = digitCount = 0;
+        hasDot = hasInput = errorState = false;
+        lastOperator = 0;
+    }
+    
+    void processButton(char button) {
+        if (errorState && button != 'C') {
+            return;
+        }
+        
+        if (button == 'C') {
+            reset();
+        } else if (button == '.' || (button >= '0' && button <= '9')) {
+            digitorDot(button);
+        } else {
+            operators(button);
+        }
+    }
+    
+    void getResult(char *output) {
+        if (errorState)
+            sprintf(output, "%10s", "Error.");
+        else
+            formatOutput(currentValue, output);
+    }
+};
 
 int main() {
     int t;
     scanf("%d\n", &t);
     
-    char line[4096];
+    char input[2048];
     
     while (t--) {
-        fgets(line, sizeof(line), stdin);
+        fgets(input, sizeof(input), stdin);
         
-        double current_value = 0.0;
-        char current_input[12];
-        int input_len = 0;
-        int digit_count = 0;
-        bool has_dot = false;
+        Calculator calc;
         
-        char last_operator = 0;
-        bool error = false;
-        bool has_input = false;
-        
-        int i = 0;
-        int len = strlen(line);
-
-        for (i = 0; i < len; i++) {
-            if (line[i] != '[') continue;
+        int len = strlen(input);
+        for (int i = 0; i < len; i++) {
+            if (input[i] != '[') continue;
             
             i++;
             if (i >= len) break;
+            char c = input[i];
             
-            char c = line[i];
+            calc.processButton(c);
             
-            if (error && c != 'C') {
-                while (i < len && line[i] != ']') i++;
-                continue;
-            }
-            
-            if (c == 'C') {
-                current_value = 0.0;
-                input_len = 0;
-                digit_count = 0;
-                has_dot = false;
-                last_operator = 0;
-                error = false;
-                has_input = false;
-            } else if (c == '.' || (c >= '0' && c <= '9')) {
-                if (c == '.') {
-                    if (!has_input) {
-                        current_input[0] = '0';
-                        current_input[1] = '.';
-                        input_len = 2;
-                        digit_count = 1;
-                        has_dot = true;
-                        has_input = true;
-                    } else if (!has_dot) {
-                        current_input[input_len++] = '.';
-                        has_dot = true;
-                    }
-                } else if (c == '0') {
-                    if (!has_input) {
-                        current_input[0] = '0';
-                        input_len = 1;
-                        digit_count = 1;
-                        has_input = true;
-                    } else if (input_len == 1 && current_input[0] == '0' && !has_dot) {
-                    } else if (digit_count < 8) {
-                        current_input[input_len++] = c;
-                        digit_count++;
-                    }
-                } else {
-                    if (!has_input) {
-                        current_input[0] = c;
-                        input_len = 1;
-                        digit_count = 1;
-                        has_input = true;
-                    } else if (input_len == 1 && current_input[0] == '0' && !has_dot) {
-                        current_input[0] = c;
-                    } else if (digit_count < 8) {
-                        current_input[input_len++] = c;
-                        digit_count++;
-                    }
-                }
-            } else {
-                if (has_input && input_len > 0) {
-                    current_input[input_len] = '\0';
-                    double num = atof(current_input);
-                    
-                    if (last_operator != 0) {
-                        current_value = apply_op(last_operator, current_value, num, error);
-                    } else {
-                        current_value = num;
-                    }
-                    
-                    input_len = 0;
-                    digit_count = 0;
-                    has_dot = false;
-                    has_input = false;
-                }
-                
-                last_operator = (c == '=') ? 0 : c;
-            }
-            
-            while (i < len && line[i] != ']') i++;
+            while (i < len && input[i] != ']') i++;
         }
         
         char output[16];
-        if (error) {
-            sprintf(output, "%10s", "Error.");
-        } else {
-            format_output(current_value, output);
-        }
+        calc.getResult(output);
+        
         printf("%s\n", output);
     }
     
     return 0;
-}
+} 
