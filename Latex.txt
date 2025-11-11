@@ -1400,7 +1400,7 @@ printf("%s\n", output);
 \end{lstlisting}
 \end{examplebox}
 
-\section{Private Methods (Fungsi Pembantu)}
+\section{Private Methods}
 
 \subsection{Method operation()}
 
@@ -1432,14 +1432,14 @@ private:
 \textbf{Fungsi:}
 \begin{itemize}
     \item Melakukan operasi matematika antara dua angka
-    \item Handle special cases seperti division by zero dan overflow
+    \item Menangani special cases seperti division by zero dan overflow
     \item Return hasil operasi atau 0.0 jika error
 \end{itemize}
 
 \textbf{Mengapa method ini private?}
 \begin{itemize}
-    \item Internal implementation detail
-    \item User tidak perlu (dan tidak boleh) memanggil langsung
+    \item Kode hanya untuk digunakan dalam class (bukan oleh user)
+    \item User tidak perlu (dan tidak boleh) memanggil langsung 
     \item Hanya dipanggil dari \texttt{operators()} method
     \item Encapsulation: menyembunyikan kompleksitas dari user
 \end{itemize}
@@ -1460,7 +1460,7 @@ private:
 Keuntungan:
 \begin{itemize}
     \item Lebih readable untuk banyak kondisi
-    \item Compiler bisa optimize menjadi jump table
+    \item Lebih mudah melakukan komparasi char
     \item Lebih cepat untuk banyak case
     \item Intensi lebih jelas: mapping operator ke operasi
 \end{itemize}
@@ -1470,9 +1470,9 @@ Keuntungan:
 case '+': result = a + b; break;
 \end{lstlisting}
 \begin{itemize}
-    \item Straightforward addition
+    \item Penjumlahan simple
     \item Contoh: 5 + 3 = 8
-    \item No special handling needed
+    \item Tidak memerlukan error handling khusus
 \end{itemize}
 
 \paragraph{Case '-': (Subtraction)}\mbox{}\\[0.5em]
@@ -1480,9 +1480,9 @@ case '+': result = a + b; break;
 case '-': result = a - b; break;
 \end{lstlisting}
 \begin{itemize}
-    \item Simple subtraction
+    \item Pengurangan simple
     \item Contoh: 10 - 4 = 6
-    \item Order matters: $a - b \neq b - a$
+    \item Urutan berpengaruh: $a - b \neq b - a$
 \end{itemize}
 
 \paragraph{Case 'x': (Multiplication)}\mbox{}\\[0.5em]
@@ -1490,7 +1490,7 @@ case '-': result = a - b; break;
 case 'x': result = a * b; break;
 \end{lstlisting}
 \begin{itemize}
-    \item Menggunakan 'x' bukan '*' untuk represent multiply
+    \item Menggunakan 'x' bukan '*' untuk menunjukan "perkalian"
     \item Contoh: $7 \times 8 = 56$
     \item Sesuai dengan simbol kalkulator fisik
 \end{itemize}
@@ -1512,33 +1512,32 @@ case ':':
 \item \textbf{Division by Zero adalah Undefined}
 \begin{itemize}
     \item Secara matematika, $x/0$ tidak terdefinisi
-    \item Komputer tidak bisa menghitung ini
+    \item Komputer tidak bisa mengkalkulasi hasilnya
     \item Harus ditangani secara eksplisit
 \end{itemize}
 
 \item \textbf{Check b == 0.0}
 \begin{itemize}
-    \item Menggunakan exact comparison dengan 0.0
-    \item Untuk double, ini safe karena 0.0 punya representasi exact
-    \item Alternatif: \texttt{fabs(b) < 1e-10} (tapi overkill untuk kasus ini)
+    \item Menggunakan komparasi dengan 0.0
+    \item Untuk double, lebih aman karena 0.0 punya representasi exact
 \end{itemize}
 
 \item \textbf{Set errorState = true}
 \begin{itemize}
     \item Flag error untuk mencegah operasi selanjutnya
-    \item User harus clear kalkulator untuk lanjut
-    \item Konsisten dengan behavior kalkulator fisik
+    \item User harus clear kalkulator untuk melanjutkan
+    \item Konsisten dengan perilaku kalkulator fisik
 \end{itemize}
 
 \item \textbf{Return 0.0}
 \begin{itemize}
-    \item Tidak masalah return value apa karena errorState = true
-    \item 0.0 dipilih sebagai safe default value
-    \item \texttt{getResult()} akan menampilkan "Error." bukan angka ini
+    \item Return value bebas karena errorState = true
+    \item 0.0 dipilih sebagai default value yang aman
+    \item \texttt{getResult()} akan menampilkan "Error.", bukan angka yang di return
 \end{itemize}
 \end{enumerate}
 
-\begin{examplebox}[Trace Division by Zero]
+\begin{examplebox}[Contoh Kasus]
 \begin{verbatim}
 User: 10 / 0 =
 
@@ -1589,7 +1588,7 @@ if (fabs(result) >= 1e100) {
 
 \textbf{Mengapa menggunakan fabs()?}
 \begin{itemize}
-    \item Check magnitude tanpa peduli tanda (+ atau -)
+    \item Check nilai tanpa peduli tanda (+ atau -)
     \item $-1e100$ sama bermasalahnya dengan $+1e100$
     \item \texttt{fabs()} dari \texttt{<cmath>} untuk floating point
 \end{itemize}
@@ -2126,20 +2125,20 @@ void digitorDot(char c) {
 \textbf{Fungsi:}
 \begin{itemize}
     \item Handle input digit (0-9) dan decimal point ('.')
-    \item Implement berbagai aturan input kalkulator
-    \item Maintain state variables (inputLength, digitCount, hasDot, hasInput)
+    \item Implementasi berbagai aturan input kalkulator
+    \item Mengupdate state variabel (inputLength, digitCount, hasDot, hasInput)
 \end{itemize}
 
 \textbf{Mengapa method ini private?}
 \begin{itemize}
-    \item Internal logic untuk building input string
-    \item Called only dari \texttt{processButton()}
+    \item Internal logic untuk menyusun input string
+    \item Dipanggil hanya dari \texttt{processButton()}
     \item User tidak perlu tau detail implementasi
 \end{itemize}
 
 \subsubsection{Handle Decimal Point ('.')}
 
-\paragraph{Case 1: First Input is Decimal Point}\mbox{}\\[0.5em]
+\paragraph{Case 1: Input pertama decimal}\mbox{}\\[0.5em]
 
 \begin{lstlisting}
 if (!hasInput) {
@@ -2151,19 +2150,18 @@ if (!hasInput) {
 }
 \end{lstlisting}
 
-\begin{examplebox}[Behavior]
+\begin{examplebox}[Perilaku]
 \begin{verbatim}
-User tekan '.' sebagai input pertama
+User menekan '.' sebagai input pertama
 → currentInput = "0."
 → Tidak hanya "."
 \end{verbatim}
 \end{examplebox}
 
-\textbf{Mengapa prepend '0'?}
+\textbf{Mengapa menambah '0'?}
 \begin{itemize}
-    \item ".5" kurang jelas, "0.5" lebih readable
-    \item Consistent dengan kalkulator fisik
-    \item Mathematical convention
+    \item notasi ".5" kurang jelas, "0.5" lebih mudah dibaca
+    \item Konsisten seperti kalkulator fisik
 \end{itemize}
 
 \textbf{Update State:}
@@ -2171,10 +2169,10 @@ User tekan '.' sebagai input pertama
     \item \texttt{inputLength = 2}: Dua karakter ('0' dan '.')
     \item \texttt{digitCount = 1}: '0' dihitung sebagai digit
     \item \texttt{hasDot = true}: Sudah ada decimal point
-    \item \texttt{hasInput = true}: Sudah mulai input
+    \item \texttt{hasInput = true}: Sudah ada input
 \end{itemize}
 
-\paragraph{Case 2: Add Decimal Point to Existing Input}\mbox{}\\[0.5em]
+\paragraph{Case 2: Menambah decimal point}\mbox{}\\[0.5em]
 
 \begin{lstlisting}
 else if (!hasDot) {
@@ -2183,7 +2181,7 @@ else if (!hasDot) {
 }
 \end{lstlisting}
 
-\begin{examplebox}[Behavior]
+\begin{examplebox}[Perilaku]
 \begin{verbatim}
 currentInput = "123"
 User tekan '.'
@@ -2193,14 +2191,14 @@ User tekan '.'
 
 \textbf{Safety Check \texttt{!hasDot}:}
 \begin{itemize}
-    \item Prevent double decimal point
-    \item "123.45." adalah invalid
-    \item Only allow one '.' per number
+    \item Menghindari decimal point berganda
+    \item "123.45." -> invalid
+    \item Hanya memperbolehkan satu "." per bilangan
 \end{itemize}
 
-\subsubsection{Handle Zero Digit ('0')}
+\subsubsection{Handle Angka 0}
 
-\paragraph{Case 1: First Input is Zero}\mbox{}\\[0.5em]
+\paragraph{Case 1: Input Pertama Adalah 0}\mbox{}\\[0.5em]
 
 \begin{lstlisting}
 if (!hasInput) {
@@ -2210,7 +2208,7 @@ if (!hasInput) {
 }
 \end{lstlisting}
 
-\begin{examplebox}[Behavior]
+\begin{examplebox}[Perilaku]
 \begin{verbatim}
 User tekan '0' pertama kali
 → currentInput = "0"
@@ -2218,7 +2216,7 @@ User tekan '0' pertama kali
 \end{verbatim}
 \end{examplebox}
 
-\paragraph{Case 2: Add Zero to Existing Input}\mbox{}\\[0.5em]
+\paragraph{Case 2: Menambahkan 0 ke Input}\mbox{}\\[0.5em]
 
 \begin{lstlisting}
 else if (!(inputLength == 1 && currentInput[0] == '0' 
@@ -2228,33 +2226,33 @@ else if (!(inputLength == 1 && currentInput[0] == '0'
 }
 \end{lstlisting}
 
-\textbf{Complex Condition Breakdown:}
+\textbf{Breakdown Kondisi:}
 \begin{lstlisting}
 !(inputLength == 1 && currentInput[0] == '0' && !hasDot)
 \end{lstlisting}
 
 \textbf{Mengapa condition ini?}
 \begin{itemize}
-    \item Prevent leading zeros: "00123" invalid
-    \item Allow zeros after decimal: "0.00123" valid
-    \item Allow zeros in middle: "102" valid
+    \item Menghindari 0 di depan (leading zero): "00123" -> invalid
+    \item Memperbolehkan 0 setelah desimal: "0.00123" -> valid
+    \item Memperbolehkan 0 diantara angka: "102" -> valid
 \end{itemize}
 
-\begin{examplebox}[Condition Analysis:]
+\begin{examplebox}[Analisis Kondisi:]
 \begin{verbatim}
 inputLength == 1: Hanya satu karakter
 currentInput[0] == '0': Karakter itu adalah '0'
 !hasDot: Belum ada decimal point
 
 Jika semua true → Input adalah "0" tanpa decimal
-→ REJECT zero berikutnya (prevent "00")
+→ REJECT zero berikutnya (menghindari "00")
 
 Negasi (!) berarti:
 → ACCEPT zero jika bukan kondisi di atas
 \end{verbatim}
 \end{examplebox}
 
-\begin{examplebox}[Examples]
+\begin{examplebox}[Contoh]
 \begin{verbatim}
 State: "0", hasDot=false
 User tekan '0'
@@ -2273,9 +2271,9 @@ User tekan '0'
 \end{verbatim}
 \end{examplebox}
 
-\subsubsection{Handle Other Digits (1-9)}
+\subsubsection{Digit Lain (1-9)}
 
-\paragraph{Case 1: First Input is Non-Zero Digit}\mbox{}\\[0.5em]
+\paragraph{Case 1: Input Pertama Adalah Digit Selain 0}\mbox{}\\[0.5em]
 
 \begin{lstlisting}
 if (!hasInput) {
@@ -2285,7 +2283,7 @@ if (!hasInput) {
 }
 \end{lstlisting}
 
-\paragraph{Case 2: Replace Leading Zero}\mbox{}\\[0.5em]
+\paragraph{Case 2: Menghilangkan Leading Zero}\mbox{}\\[0.5em]
 
 \begin{lstlisting}
 else if (inputLength == 1 && currentInput[0] == '0' 
@@ -2294,7 +2292,7 @@ else if (inputLength == 1 && currentInput[0] == '0'
 }
 \end{lstlisting}
 
-\begin{examplebox}[Behavior]
+\begin{examplebox}[Perilaku]
 \begin{verbatim}
 State: "0", hasDot=false
 User tekan '5'
@@ -2302,14 +2300,14 @@ User tekan '5'
 \end{verbatim}
 \end{examplebox}
 
-\textbf{Mengapa replace instead of append?}
+\textbf{Mengapa mengganti dan bukan menambahkan?}
 \begin{itemize}
-    \item Prevent leading zeros: "05" invalid
-    \item User expectation: typing "5" after "0" should give "5", not "05"
+    \item Menghindari leading zeros: "05" invalid
+    \item Ekspektasi user: mengetik "5" setelah "0" harusnya menampilkan "5", bukan "05"
     \item Konsisten dengan kalkulator fisik
 \end{itemize}
 
-\paragraph{Case 3: Append Digit to Existing Input}\mbox{}\\[0.5em]
+\paragraph{Case 3: Menambahkan Digit ke Input}\mbox{}\\[0.5em]
 
 \begin{lstlisting}
 else if (digitCount < 8) {
@@ -2318,7 +2316,7 @@ else if (digitCount < 8) {
 }
 \end{lstlisting}
 
-\begin{examplebox}[Complete Example Trace]
+\begin{examplebox}[Contoh Kasus]
 \begin{verbatim}
 Sequence: [.] [0] [5] [3]
 
@@ -2399,9 +2397,9 @@ currentInput[inputLength] = '\0';
 
 \textbf{Mengapa perlu null terminator?}
 \begin{itemize}
-    \item C-style strings must end dengan '\textbackslash0'
+    \item C-style string harus diakhiri dengan '\textbackslash0'
     \item \texttt{atof()} butuh null-terminated string
-    \item Without this, atof() bisa read garbage memory
+    \item Tanpa ini, atof() bisa membaca memory sampah
 \end{itemize}
 
 \subsubsection{Convert String to Double}
@@ -2412,9 +2410,9 @@ double num = atof(currentInput);
 
 \textbf{atof() Function:}
 \begin{itemize}
-    \item "ASCII to Float"
-    \item Parse string menjadi double
-    \item From \texttt{<cstdlib>} (included via \texttt{<cstdio>})
+    \item "ASCII menjadi Float"
+    \item Parsing string menjadi double
+    \item Dari \texttt{<cstdlib>} (included via \texttt{<cstdio>})
 \end{itemize}
 
 \begin{examplebox}[Examples]
@@ -2465,8 +2463,8 @@ Step 4: Input '4', tekan '='
 \textbf{Mengapa tidak execute operation?}
 \begin{itemize}
     \item Ini angka pertama dalam expression
-    \item Belum ada operation yang perlu dilakukan
-    \item Just store untuk digunakan operation berikutnya
+    \item Belum ada operasi yang perlu dilakukan
+    \item Store untuk digunakan operasi berikutnya
 \end{itemize}
 
 \subsubsection{Reset Input State}
@@ -2478,7 +2476,7 @@ hasDot = hasInput = false;
 
 \textbf{Mengapa reset semua flags?}
 \begin{itemize}
-    \item Prepare untuk input number berikutnya
+    \item Mempersiapkan untuk input number berikutnya
     \item User akan start fresh setelah operator
     \item Input lama sudah disimpan di currentValue
 \end{itemize}
@@ -2491,9 +2489,9 @@ lastOperator = (op == '=') ? 0 : op;
 
 \textbf{Mengapa '=' clear lastOperator?}
 \begin{itemize}
-    \item '=' finalize calculation
-    \item No pending operation after '='
-    \item Next input starts new calculation
+    \item Operator '=' menyelesaikan perhitungan
+    \item Tidak ada operasi tertunda setelah operator '=' dieksekusi
+    \item Input berikutnya akan memulai perhitungan baru
 \end{itemize}
 
 \begin{examplebox}[Complete Operation Trace]
@@ -2528,7 +2526,7 @@ Result: currentValue = 10.0
 \end{verbatim}
 \end{examplebox}
 
-\section{Main Function Implementation}
+\section{Fungsi Main}
 
 \begin{lstlisting}
 int main() {
@@ -2568,44 +2566,44 @@ int main() {
 \textbf{Fungsi:}
 \begin{itemize}
     \item Driver program untuk testing Calculator class
-    \item Read test cases dari input
-    \item Parse button presses dari format \texttt{[button]}
-    \item Display hasil setiap test case
+    \item Membaca test case dari input
+    \item Parsing tombol yang ditekan dari format \texttt{[button]}
+    \item Menampilkan hasil setiap test case
 \end{itemize}
 
-\subsection{Read Number of Test Cases}
+\subsection{Membaca Jumlah Test Cases}
 
 \begin{lstlisting}
 int t;
 scanf("%d\n", &t);
 \end{lstlisting}
 
-\begin{examplebox}[Format Input]
+\begin{examplebox}[Format Input (Contoh)]
 \begin{verbatim}
 3
 [5][+][3][=]
 [1][0][/][2][=]
 [C]
 \end{verbatim}
-\textbf{First Line:} $t = 3$ (Ada 3 test cases)
+\textbf{First Line:} $t = 3$ (Ada 3 test case)
 \end{examplebox}
 
-\subsection{Process Each Test Case}
+\subsection{Memproses Test Case}
 
 \begin{lstlisting}
 while (t--) {
-    // ... process one test case
+    // ... memproses satu testcase
 }
 \end{lstlisting}
 
-\textbf{Loop Behavior:}
+\textbf{Perilaku Loop:}
 \begin{itemize}
     \item \texttt{t--}: Decrement setelah check
     \item Loop sampai $t = 0$
-    \item Each iteration process satu baris input
+    \item Setiap iterasi memproses satu baris input
 \end{itemize}
 
-\subsection{Read Test Case Line}
+\subsection{Membaca Baris Test Case}
 
 \begin{lstlisting}
 char input[2048];
@@ -2614,49 +2612,48 @@ fgets(input, sizeof(input), stdin);
 
 \textbf{fgets() vs scanf():}
 \begin{itemize}
-    \item fgets(): Read entire line termasuk spaces
-    \item scanf("\%s"): Stop at whitespace
-    \item Safer: include size limit
+    \item fgets(): Membaca satu line input (termasuk spaces)
+    \item scanf("\%s"): Berhenti ketika ada white space
 \end{itemize}
 
-\subsection{Create Fresh Calculator Instance}
+\subsection{Membuat Kalkulator Baru}
 
 \begin{lstlisting}
 Calculator calc;
 \end{lstlisting}
 
-\textbf{Fresh Instance untuk Each Test:}
+\textbf{Fresh Instance untuk Setiap Test:}
 \begin{itemize}
-    \item Each test case independent
-    \item No state carry-over
-    \item Constructor initialize clean state
+    \item Setiap test case independent
+    \item State (test case) sebelumnya tidak mempengaruhi state sekarang
+    \item Constructor menginisialisasi state bersih
 \end{itemize}
 
-\begin{notebox}[Mengapa not reuse?]
+\begin{notebox}[Mengapa tidak reuse?]
 \begin{lstlisting}
-// Alternative (kurang clean):
+// Alternative :
 Calculator calc;
 while (t--) {
     calc.reset();  // Manual reset
     // ...
 }
 
-// Better (yang dipakai):
+// Better :
 while (t--) {
-    Calculator calc;  // Fresh instance
+    Calculator calc;  // Lebih rapih
     // ...
 }
 \end{lstlisting}
 
 Keuntungan fresh instance:
 \begin{itemize}
-    \item Clear intent: new calculator untuk new test
-    \item Automatic cleanup via destructor
-    \item No risk lupa reset
+    \item Calculator "baru" untuk setiap test
+    \item Cleanup otomatis melalui destructor
+    \item Mengurangi kemungkinan lupa reset
 \end{itemize}
 \end{notebox}
 
-\subsection{Parse Button Presses}
+\subsection{Parsing Tombol Input}
 
 \begin{lstlisting}
 int len = strlen(input);
@@ -2675,34 +2672,34 @@ for (int i = 0; i < len; i++) {
 
 \textbf{Format:} \texttt{[button]}
 \begin{itemize}
-    \item Each button wrapped dalam brackets
-    \item Examples: \texttt{[5]}, \texttt{[+]}, \texttt{[.]}, \texttt{[C]}
+    \item Setiap "tombol" dibungkus dalam brackets
+    \item Contoh: \texttt{[5]}, \texttt{[+]}, \texttt{[.]}, \texttt{[C]}
 \end{itemize}
 
-\begin{examplebox}[Example Parse]
+\begin{examplebox}[Contoh Parsing]
 \begin{verbatim}
 Input: "[5][+][3][=]"
 Index:  0123456789...
 
-i=0: input[0]='[' → found!
+i=0: input[0]='[' → found
 i=1: c='5' → processButton('5')
 i=1,2: skip to ']'
 
-i=3: input[3]='[' → found!
+i=3: input[3]='[' → found
 i=4: c='+' → processButton('+')
 i=4,5: skip to ']'
 
-i=6: input[6]='[' → found!
+i=6: input[6]='[' → found
 i=7: c='3' → processButton('3')
 i=7,8: skip to ']'
 
-i=9: input[9]='[' → found!
+i=9: input[9]='[' → found
 i=10: c='=' → processButton('=')
 i=10,11: skip to ']'
 \end{verbatim}
 \end{examplebox}
 
-\subsection{Get and Display Result}
+\subsection{Menampilkan Result}
 
 \begin{lstlisting}
 char output[16];
@@ -2710,7 +2707,7 @@ calc.getResult(output);
 printf("%s\n", output);
 \end{lstlisting}
 
-\begin{examplebox}[Complete Test Case Example]
+\begin{examplebox}[Contoh Test Case]
 \begin{verbatim}
 Input: "[5][+][3][=]"
 
